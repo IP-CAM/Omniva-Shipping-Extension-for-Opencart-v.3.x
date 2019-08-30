@@ -1,0 +1,118 @@
+{% if error_warning %}
+<div class="alert alert-warning alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}</div>
+{% endif %}
+{% if shipping_methods %}
+<p>{{ text_shipping_method }}</p>
+{% for key, shipping_method in shipping_methods %}
+{% if methods_mapping[key] == 'omnivalt' %}
+                       <script>
+        $(document).ready(function () {
+            // we dont want hidden overflow
+            //$('.checkout-content.checkout-shipping-methods').css({'display': 'inherit','overflow': 'inherit'});
+      var selected_method = "{{ session_shipping_code }}";
+      var omnivaModuleReady = false;
+      var first_time = true;
+            omnivaModuleReady = $('#omniva_terminal').omniva({
+                autoHide: false,
+                country_code: "{{ omniva_country }}",
+                path_to_img: 'image/omniva/',
+                callback: function (id) {
+                    if (first_time) {
+                        first_time = false;
+                        omnivaModuleReady.val('omnivalt.parcel_terminal_' + id);
+                    } else {
+                        omnivaModuleReady.val('omnivalt.parcel_terminal_' + id).prop('checked', true);
+                    }
+
+                    if (omnivaModuleReady.is(':checked')) {
+                        omnivaModuleReady.trigger('change');
+                    }
+                },
+                translate: {{ omniva_map_translation|json_encode() }},
+                terminals: {{ omniva_locations|json_encode() }}
+            });
+
+            if(/^omnivalt\.parcel_terminal/.test(selected_method)) {
+                omnivaModuleReady.trigger('omniva.select_terminal', [selected_method.substring(25)]);
+            } else {
+                // with default template this should be enough even if user changes postcode (as he needs to press continue button)
+                var sameShipping = $('input[name="shipping_address"]');
+                if (sameShipping.length > 0 && sameShipping.is(':checked')) {
+                    omnivaModuleReady.trigger('omniva.postcode', [$('#input-payment-postcode').val()]);
+                } else {
+                    omnivaModuleReady.trigger('omniva.postcode', [$('#input-shipping-postcode').val()]);
+                }
+            }
+            // make sure selection represents method thats saved in session
+            $('input[name="shipping_method"][value="' + selected_method + '"]').prop('checked', true);
+      });
+    </script>
+    {% endif %}
+<p><strong>{{ shipping_method.title }}</strong></p>
+{% if not shipping_method.error %}
+{# CUSTOM CODE #}  
+                        {% if shipping_method.quote['courier'] is defined %}
+                            {% set quote = shipping_method.quote['courier'] %}
+                            <div class="radio">
+                                <label>
+                                    {% if quote.code == code %}
+                                        <input type="radio" name="shipping_method" value="{{ quote.code }}" checked="checked"/>
+                                    {% else %}
+                                        <input type="radio" name="shipping_method" value="{{ quote.code }}"/>
+                                    {% endif %}
+                                    {{ quote.title }} - {{ quote.text }}
+                                </label>
+                            </div>
+                        {% endif %}
+                        {% if shipping_method.quote|length > 1 %} {# there is terminals #}
+                            <div class="radio">
+                                {# <select id="omniva_sel"> #}
+                                    {% set terminal = false %}
+                                    {% for quote in shipping_method.quote if quote.code starts with 'omnivalt.parcel' %}
+                                        {% if not terminal %}
+                                            {% set terminal = quote %}
+                                        {% endif %}
+                                        {% if quote.code == code %}
+                                            {% set terminal = quote %}
+                                            {# <option value="{{ quote.code }}" selected>{{ quote.title }}</option> #}
+                                        {% else %}
+                                            {# <option value="{{ quote.code }}">{{ quote.title }}</option> #}
+                                        {% endif %}
+                                    {% endfor %}
+                                {# </select> #}
+                                <label>
+                                    {% if terminal.code == code %}
+                                        <input id="omniva_terminal" type="radio" name="shipping_method" value="{{ terminal.code }}" checked="checked"/>
+                                    {% else %}
+                                        <input id="omniva_terminal" type="radio" name="shipping_method" value="{{ terminal.code }}"/>
+                                    {% endif %}
+                                    {{ terminal.head }} - {{ terminal.text }}
+                                </label>
+                            </div>
+                        {% endif %}
+{# CUSTOM CODE END #}
+{% for quote in shipping_method.quote if not (quote.code starts with 'omnivalt') %}
+<div class="radio">
+  <label> {% if quote.code == code or not code %}
+    {% set code = quote.code %}
+    <input type="radio" name="shipping_method" value="{{ quote.code }}" checked="checked" />
+    {% else %}
+    <input type="radio" name="shipping_method" value="{{ quote.code }}" />
+    {% endif %}
+    {{ quote.title }} - {{ quote.text }}</label>
+</div>
+{% endfor %}
+{% else %}
+<div class="alert alert-danger alert-dismissible">{{ shipping_method.error }}</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+<p><strong>{{ text_comments }}</strong></p>
+<p>
+  <textarea name="comment" rows="8" class="form-control">{{ comment }}</textarea>
+</p>
+<div class="buttons">
+  <div class="pull-right">
+    <input type="button" value="{{ button_continue }}" id="button-shipping-method" data-loading-text="{{ text_loading }}" class="btn btn-primary" />
+  </div>
+</div>
