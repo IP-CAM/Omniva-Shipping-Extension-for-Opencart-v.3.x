@@ -1,6 +1,7 @@
 [![Download](https://img.shields.io/badge/dynamic/json.svg?label=download&url=https://api.github.com/repos/mijora/omniva-opencart-3.0-ocmod/releases/latest&query=$.assets[0].name&style=for-the-badge)](https://github.com/mijora/omniva-opencart-3.0-ocmod/releases/latest)
 
-Omnivalt Shipping Module
+## Omnivalt Shipping Module
+
 For best usage, make sure Opencart shop is configured.
 
 To install:
