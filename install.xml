@@ -33,7 +33,7 @@
         $data['editOmniva'] = $this->url->link('extension/shipping/omnivalt/prints/editLabel', 'user_token=' . $this->session->data['user_token']. '&order_id='.$data['order_id'], true);
         $data['payment_code'] = $order_info['payment_code'];
         /* $data['orderTotal'] = $order_info['total']; */
-        $data['orderTotal'] = floatval($this->currency->format($order_info['total'], $this->config->get('config_currency')));
+        $data['orderTotal'] = $this->currency->format($order_info['total'], $order_info['currency_code'], $order_info['currency_value'], false);
 
         $data['parcel_terminals'] = null;
         if(substr($order_info['shipping_code'], 0, 8) == 'omnivalt') {
@@ -111,7 +111,7 @@
               </td>
               <td colspan="2">
                 {{text_cod_amount }}
-                <input type="text" name="cod_value" class="form-control input-sm" value="{% if cod_amount and cod_amount != 888888 %} {{ cod_amount }} {% else %} {{ orderTotal }} {% endif %}">
+                <input type="text" name="cod_value" class="form-control input-sm" value="{% if cod_amount and cod_amount != 888888 %}{{ cod_amount }}{% else %}{{ orderTotal }}{% endif %}">
               </td>
             </tr>
             <tr>

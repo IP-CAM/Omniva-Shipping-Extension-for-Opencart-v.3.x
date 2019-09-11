@@ -63,12 +63,12 @@
 
         </td>
         <td width='15%'>{{ nOrder['date_modified'] }}</td>
-        <td width='15%'>{{ nOrder['currency_left'] }}{{ nOrder['total'] }}{{ nOrder['currency_right'] }}</td>
+        <td width='15%'>{{ nOrder['formated_total'] }}</td>
         <td width='15%'>
         <a href="{{ genLabels}}&order_id={{ nOrder['order_id']}}" target="_blank">{{ generate_label }}</a>
         {% if nOrder['tracking'] == null %}
         <a href="{{skip}}&order_id={{nOrder['order_id']}}">{{text_skip_order}}</a>
-         {% endif %}
+        {% endif %}
         <input type='hidden' name='selected[]' value="{{ nOrder['order_id']}}">
         {% if nOrder != null %}
         <input type='hidden' name='manifest' value="{{ nOrder['manifest'] }}">
@@ -106,7 +106,7 @@
                 <td width='15%'><a href="{{client}}&order_id={{ nOrder['order_id'] }}" target="_blank">{{ nOrder['full_name'] }}</a></td>
                 <td width='15%'></td>
                 <td width='15%'>{{ nOrder['date_modified'] }}</td>
-                <td width='15%'>{{ nOrder['currency_left'] }}{{ nOrder['total'] }}{{ nOrder['currency_right'] }}</td>
+                <td width='15%'>{{ nOrder['formated_total'] }}</td>
                 <td width='15%'>
                         <?php if($nOrder['manifest'] == -1){?>
                     <a href="{{ cancelSkip }}&order_id={{ nOrder['order_id'] }}">{{ text_add_order }}</a>
@@ -159,7 +159,7 @@
         {{variable}}
             </td>
             <td>{{ order['date_modified'] }}</td>
-            <td>{{ order['currency_left'] }}{{ order['total'] }}{{ order['currency_right'] }}</td>
+            <td>{{ order['formated_total'] }}</td>
             <td >
             <a href="{{genLabels }}&order_id={{order['order_id']}}" target="_blank">{{generate_label}}</a>
             <input type='hidden' name='selected[]' value="{{order['order_id']}}">
@@ -327,7 +327,7 @@ $(document).ready(function() {
                 <td> <a href='{{ client|replace({"&amp;":"&"}) }}&order_id="+gotOrder['order_id']+"' target='_blank'>"+gotOrder['full_name']+"</a></td>\
                 <td> "+gotOrder['tracking']+"</a></td>\
                 <td>"+gotOrder['date_modified']+"</td>\
-                <td>"+gotOrder['currency_left']+gotOrder['total']+gotOrder['currency_right']+"</td>\
+                <td>"+gotOrder['formated_total']+"</td>\
                 <td> <a href='{{ genLabels|replace({"&amp;":"&"}) }}&order_id="+gotOrder['order_id']+"' target='_blank'>Generuoti lipdukus</a></td>\
             </tr>");
         }
