@@ -45,17 +45,17 @@ class ControllerExtensionShippingOmnivalt extends Controller
 
     // Admin Events
     $this->model_setting_event->addEvent(
-      $this->codename,
+      $this->defaulCodename,
       'admin/view/common/column_left/before',
       'extension/shipping/omnivalt/events/menu'
     );
     $this->model_setting_event->addEvent(
-      $this->codename,
+      $this->defaulCodename,
       'admin/view/sale/order_list/before',
       'extension/shipping/omnivalt/events/orderList'
     );
     $this->model_setting_event->addEvent(
-      $this->codename,
+      $this->defaulCodename,
       'admin/view/sale/order_info/before',
       'extension/shipping/omnivalt/events/orderInfo'
     );
