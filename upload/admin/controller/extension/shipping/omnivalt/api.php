@@ -439,9 +439,11 @@ class ControllerExtensionShippingOmnivaltApi extends Controller
 
   protected static function getReferenceNumber($order_number)
   {
-    $order_number = ($order_number < 10 ? '0' : '') . (string) $order_number;
+    $order_number = (string) $order_number;
     $kaal = array(7, 3, 1);
     $sl = $st = strlen($order_number);
+    // makesure its at least 2 symbols
+    $order_number = ($sl < 2 ? '0' : '') . (string) $order_number;
     $total = 0;
     while ($sl > 0 and substr($order_number, --$sl, 1) >= '0') {
       $total += substr($order_number, ($st - 1) - $sl, 1) * $kaal[($sl % 3)];
