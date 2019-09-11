@@ -14,11 +14,9 @@ class ControllerExtensionModuleOmnivaltDefault extends Controller
   {
     if (isset($this->request->post['shipping_country_id'])) {
       $country_id = intval($this->request->post['shipping_country_id']);
-      if (isset($this->session->data['omniva_country_loaded'])) {
+      $omniva_loaded_country = '';
+      if (isset($this->session->data['omniva_country_loaded']))
         $omniva_loaded_country = $this->session->data['omniva_country_loaded'];
-      } else {
-        $omniva_loaded_country = '';
-      }
       if ($omniva_loaded_country != $country_id) {
         // get country information
         $this->load->model('localisation/country');
@@ -57,10 +55,9 @@ class ControllerExtensionModuleOmnivaltDefault extends Controller
     ];
 
     // some checkouts messes up selected shipping method
+    $data['session_shipping_code'] = "00000"; // nonexistant code
     if (isset($this->session->data['shipping_method'])) {
       $data['session_shipping_code'] = $this->session->data['shipping_method']['code'];
-    } else {
-      $data['session_shipping_code'] = "00000"; // nonexistant code
     }
 
     // get shipping methods country

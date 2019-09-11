@@ -1,88 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <modification>
   <name>Omnivalt Shipping Mod Default</name>
-  <version>1.0</version>
+  <version>1.1</version>
   <author>Mijora</author>
   <link>https://www.mijora.lt</link>
   <code>omnivaltshipping</code>
-
-  <file path="catalog/view/theme/*/template/common/header.twig" error="log">
-    <operation>
-      <search><![CDATA[</head>]]></search>
-      <add position="before"><![CDATA[
-<link href="catalog/view/javascript/omnivalt/leaflet.css" rel="stylesheet">
-<link href="catalog/view/javascript/omnivalt/omniva-map.css" rel="stylesheet">
-<link href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" rel="stylesheet">
-<script defer src="catalog/view/javascript/omnivalt/leaflet.js" type="text/javascript"></script>
-<script defer src="catalog/view/javascript/omnivalt/omniva-map.min.js" type="text/javascript"></script>
+  <file path="catalog/controller/checkout/checkout.php" error="log">
+    <operation error="skip">
+      <search><![CDATA[$this->document->addStyle('catalog/view/javascript/jquery/datetimepicker/bootstrap-datetimepicker.min.css');]]></search>
+      <add position="after"><![CDATA[
+        $this->document->addStyle('https://use.fontawesome.com/releases/v5.3.1/css/all.css');
+        $this->document->addStyle('catalog/view/javascript/omnivalt/leaflet.css');
+        $this->document->addStyle('catalog/view/javascript/omnivalt/omniva-map.css');
+    
+        $this->document->addScript('catalog/view/javascript/omnivalt/leaflet.js');
+        $this->document->addScript('catalog/view/javascript/omnivalt/omniva-map.min.js');
         ]]>
       </add>
     </operation>
   </file>
-
-  <file path="admin/controller/common/column_left.php">
-    <operation>
-      <search><![CDATA[if ($marketplace) {	]]></search>
-      <add position="before"><![CDATA[   
-        $omniva = array();
-        $this->load->language('extension/shipping/omnivalt');                 
-			  if ($this->user->hasPermission('access', 'extension/omnivalt/omnivalt')) {        
-          $omniva[] = array(
-            'name'     => $this->language->get('menu_manifest'),
-            'href'     => $this->url->link('extension/omnivalt/omnivalt', 'user_token=' . $this->session->data['user_token'], true),
-            'children' => array()      
-          );                  
-			  }
-			  if ($this->user->hasPermission('access', 'extension/shipping/omnivalt')) {        
-          $omniva[] = array(
-            'name'     => $this->language->get('menu_settings'),
-            'href'     => $this->url->link('extension/shipping/omnivalt', 'user_token=' . $this->session->data['user_token'], true),
-            'children' => array()      
-          );                  
-			  }					
-			  if ($this->user->hasPermission('access', 'extension/shipping/omnivalt')) {
-          $marketplace[] = array(
-            'name'     => $this->language->get('menu_head'),
-            'href'     => '',
-            'children' => $omniva
-          );
-			  }
-        ]]>
-      </add>
-    </operation>
-  </file>
-
-  <file name="admin/controller/sale/order.php">
-    <operation>
-      <search position="after"><![CDATA[
-        $data['shipping'] = $this->url->link('sale/order/shipping', 'user_token=' . $this->session->data['user_token'], true);
-        ]]>
-      </search>
-      <add><![CDATA[
-        $data['omnivalt_label'] = $this->url->link('extension/omnivalt/omnivaltPrints/labels', 'user_token=' . $this->session->data['user_token'], true);
-        $this->load->language('extension/shipping/omnivalt');
-        $data['generate_labels']   =$this->language->get('generate_labels');
-        $data['text_manifest']   =$this->language->get('print_manifest');
-        $data['omnivalt_manifest'] = $this->url->link('extension/omnivalt/omnivaltPrints/manifest', 'user_token=' . $this->session->data['user_token'], true);   
-        ]]>
-      </add>
-    </operation>
-
-    <operation>
-      <search position="after"><![CDATA[
-        $data['invoice'] = $this->url->link('sale/order/invoice', 'user_token=' . $this->session->data['user_token'] . '&order_id=' . (int)$this->request->get['order_id'], true);		
-        ]]>
-      </search>
-      <add><![CDATA[
-        $data['omnivalt_label'] = $this->url->link('extension/omnivalt/omnivaltPrints/labels', 'user_token=' . $this->session->data['user_token'] . '&order_id=' . (int)$this->request->get['order_id'], true);		    
-        $data['omnivalt_label_print'] = $this->url->link('extension/omnivalt/omnivaltPrints/labelsprint', 'user_token=' . $this->session->data['user_token'] . '&order_id=' . (int)$this->request->get['order_id'], true);		              
-        ]]>
-      </add>
-    </operation>
-
-    <operation>
-      <search position="after"><![CDATA[$data['payment_method'] = $order_info['payment_method'];]]></search>
-      <add><![CDATA[
+  <file path="admin/controller/sale/order.php" error="log">
+    <operation error="skip">
+      <search><![CDATA[$data['payment_method'] = $order_info['payment_method'];]]></search>
+      <add position="after"><![CDATA[
         /* Additional field */
         $data['orderCarrier'] = $order_info['shipping_code'];
         $data['labelsCount'] = $order_info['labelsCount'];
@@ -90,7 +30,7 @@
         $data['cod_amount'] = $order_info['cod_amount'];
         $data['omniva_terminals'] = $this->config->get('omnivalt_terminals_LT');
         $data['shipping_code'] = $order_info['shipping_code'];
-        $data['editOmniva'] = $this->url->link('extension/omnivalt/omnivaltPrints/editLabel', 'user_token=' . $this->session->data['user_token']. '&order_id='.$data['order_id'], true);
+        $data['editOmniva'] = $this->url->link('extension/shipping/omnivalt/prints/editLabel', 'user_token=' . $this->session->data['user_token']. '&order_id='.$data['order_id'], true);
         $data['payment_code'] = $order_info['payment_code'];
         /* $data['orderTotal'] = $order_info['total']; */
         $data['orderTotal'] = floatval($this->currency->format($order_info['total'], $this->config->get('config_currency')));
@@ -129,21 +69,18 @@
       </add>
     </operation>
   </file>
-
-  <file name="admin/view/template/sale/order_info.twig">
-    <operation>
-      <search position="before"><![CDATA[
-        <a href="{{ invoice }}" target="_blank" data-toggle="tooltip" title="{{ button_invoice_print }}" class="btn btn-info"><i class="fa fa-print"></i></a>            ]]>
-      </search>
-      <add><![CDATA[
+  <file path="admin/view/template/sale/order_info.twig" error="log">
+    <operation error="skip">
+      <search><![CDATA[<a href="{{ invoice }}" target="_blank" data-toggle="tooltip" title="{{ button_invoice_print }}" class="btn btn-info"><i class="fa fa-print"></i></a>            ]]></search>
+      <add position="replace"><![CDATA[
         <a href="{{ omnivalt_label }}" target="_blank" data-toggle="tooltip" title="{{ generate_labels }}" class="btn btn-warning"><i class="fa fa-barcode"></i></a>
+        <a href="{{ invoice }}" target="_blank" data-toggle="tooltip" title="{{ button_invoice_print }}" class="btn btn-info"><i class="fa fa-print"></i></a>
         ]]>
       </add>
     </operation>
-
-    <operation>
-      <search position="before"><![CDATA[<h3 class="panel-title"><i class="fa fa-user"></i> {{ text_customer_detail }}</h3>]]></search>
-      <add><![CDATA[
+    <operation error="skip">
+      <search><![CDATA[<h3 class="panel-title"><i class="fa fa-user"></i> {{ text_customer_detail }}</h3>]]></search>
+      <add position="before"><![CDATA[
         {% if 'omnivalt' in orderCarrier %}
         <form method="POST" action="{{ editOmniva }}">
           <input type="hidden" value="{{ order_id }}" name="order_id">
@@ -199,32 +136,58 @@
       </add>
     </operation>
   </file>
-
-  <file name="admin/view/template/sale/order_list.twig">
-    <operation>
-      <search position="before"><![CDATA[<button type="button" data-toggle="tooltip" title="{{ button_filter }}"]]></search>
-      <add><![CDATA[
+  <file path="admin/view/template/sale/order_list.twig" error="log">
+    <operation error="skip">
+      <search><![CDATA[<button type="button" data-toggle="tooltip" title="{{ button_filter }}"]]></search>
+      <add position="before"><![CDATA[
         <button type="submit" id="button-omnivalt-labels" form="form-order" formaction="{{ omnivalt_label }}" formtarget="_blank" data-toggle="tooltip" title="{{ generate_labels }}" class="btn btn-warning"><i class="fa fa-barcode"></i></button>
         <button type="submit" id="button-omnivalt-manifests" form="form-order" formaction="{{ omnivalt_manifest }}" formtarget="_blank" data-toggle="tooltip" title="{{ text_manifest }}" class="btn btn-info"><i class="fa fa-file-text"></i></button>
         ]]>
       </add>
     </operation>
+    <operation error="skip">
+      <search><![CDATA[<script src="view/javascript/jquery/datetimepicker/bootstrap-datetimepicker.min.js" type="text/javascript"></script>]]></search>
+      <add position="before"><![CDATA[
+        <script type="text/javascript"><!--
+        $('#form-order input[type=\'checkbox\']:first').on('change', function(e) {
+          $('input[name*=\'selected\']:first').trigger('change');
+        });
+        $('input[name^=\'selected\']').on('change', function() {
+	        $('#button-omnivalt-labels, #button-omnivalt-manifests').prop('disabled', true);
 
-    <operation>
-      <search position="after"><![CDATA[<td class="text-left">{{ order.customer }}]]></search>
-      <add><![CDATA[
-        {% if 'omnivalt' in order["shipping_code"] %}
-        <img src="./view/image/omniva-lt.png" alt="Omniva LT" height="20">
-        {% endif %}
+	        var selected = $('input[name^=\'selected\']:checked');
+
+          if (selected.length) {
+            $('#button-omnivalt-labels, #button-omnivalt-manifests').prop('disabled', false);
+          }
+        });
+
+        $('#button-omnivalt-labels, #button-omnivalt-manifests').prop('disabled', true);
+
+        // IE and Edge fix!
+        $('#button-omnivalt-labels, #button-omnivalt-manifests').on('click', function(e) {
+          $('#form-order').attr('action', this.getAttribute('formAction'));
+        }); //-->
+        </script>
+        ]]>
+      </add>
+    </operation>
+    <operation error="skip">
+      <search><![CDATA[<td class="text-left">{{ order.customer }}</td>]]></search>
+      <add position="replace"><![CDATA[
+        <td class="text-left">{{ order.customer }}
+          {% if 'omnivalt' in order["shipping_code"] %}
+          <img src="./view/image/omniva-lt.png" alt="Omniva LT" height="20">
+          {% endif %}
+        </td>
         ]]>
       </add>
     </operation>
   </file>
-
-  <file name="admin/model/sale/order.php">
-    <operation>
-      <search position="after"><![CDATA[ $order_query->row['date_modified']]]></search>
-      <add><![CDATA[
+  <file path="admin/model/sale/order.php" error="log">
+    <operation error="skip">
+      <search><![CDATA[ $order_query->row['date_modified']]]></search>
+      <add position="after"><![CDATA[
         ,'labelsCount'           => $order_query->row['labelsCount'],
         'omnivaWeight'           => $order_query->row['omnivaWeight'],
         'cod_amount'             => $order_query->row['cod_amount'],
@@ -233,5 +196,4 @@
       </add>
     </operation>
   </file>
-
 </modification>

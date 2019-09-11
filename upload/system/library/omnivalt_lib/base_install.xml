@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+  <name>Omnivalt Shipping Mod Default</name>
+  <version>1.1</version>
+  <author>Mijora</author>
+  <link>https://www.mijora.lt</link>
+  <code>omnivaltshipping</code>
+  <file path="catalog/controller/checkout/checkout.php" error="log">
+    <operation error="skip">
+      <search><![CDATA[$this->document->addStyle('catalog/view/javascript/jquery/datetimepicker/bootstrap-datetimepicker.min.css');]]></search>
+      <add position="after"><![CDATA[
+        $this->document->addStyle('https://use.fontawesome.com/releases/v5.3.1/css/all.css');
+        $this->document->addStyle('catalog/view/javascript/omnivalt/leaflet.css');
+        $this->document->addStyle('catalog/view/javascript/omnivalt/omniva-map.css');
+    
+        $this->document->addScript('catalog/view/javascript/omnivalt/leaflet.js');
+        $this->document->addScript('catalog/view/javascript/omnivalt/omniva-map.min.js');
+        ]]>
+      </add>
+    </operation>
+  </file>
+  <file path="admin/controller/sale/order.php" error="log">
+    <operation error="skip">
+      <search><![CDATA[$data['payment_method'] = $order_info['payment_method'];]]></search>
+      <add position="after"><![CDATA[
+        /* Additional field */
+        $data['orderCarrier'] = $order_info['shipping_code'];
+        $data['labelsCount'] = $order_info['labelsCount'];
+        $data['omnivaWeight'] = $order_info['omnivaWeight'];
+        $data['cod_amount'] = $order_info['cod_amount'];
+        $data['omniva_terminals'] = $this->config->get('omnivalt_terminals_LT');
+        $data['shipping_code'] = $order_info['shipping_code'];
+        $data['editOmniva'] = $this->url->link('extension/shipping/omnivalt/prints/editLabel', 'user_token=' . $this->session->data['user_token']. '&order_id='.$data['order_id'], true);
+        $data['payment_code'] = $order_info['payment_code'];
+        /* $data['orderTotal'] = $order_info['total']; */
+        $data['orderTotal'] = floatval($this->currency->format($order_info['total'], $this->config->get('config_currency')));
+
+        $data['parcel_terminals'] = null;
+        if(substr($order_info['shipping_code'], 0, 8) == 'omnivalt') {
+          $omniva_terminals = $this->config->get('omnivalt_terminals_LT');
+          $grouped_options = array();
+          $parcel_terminals = '';
+          $shipping_code = $order_info['shipping_code'];
+          foreach ($omniva_terminals as $terminal){
+            if (!isset($grouped_options[$terminal[1]]))
+              $grouped_options[(string)$terminal[1]] = array();
+            $grouped_options[(string)$terminal[1]][(string)$terminal[3]] = $terminal[0].', '.$terminal[2];  
+          }
+          foreach ($grouped_options as $city=>$locs){
+            $parcel_terminals .= '<optgroup label = "'.$city.'">';
+            foreach ($locs as $key=>$loc){
+              $parcel_terminals .= '<option value = "omnivalt.parcel_terminal_'.$key.'|'.$loc.'" '.('omnivalt.parcel_terminal_'.$key == $shipping_code ?'selected':'').'>'.$loc.'</option>';
+            }
+            $parcel_terminals .= '</optgroup>';
+          }
+          if ($parcel_terminals != '')
+          $data['parcel_terminals'] = $parcel_terminals;
+        }
+
+        $this->load->language('extension/shipping/omnivalt');
+        $data['labels_count']   =$this->language->get('labels_count');
+        $data['weight']   =$this->language->get('weight');
+        $data['delivery_method']   =$this->language->get('delivery_method');
+        $data['generate_labels']   =$this->language->get('generate_labels');
+        $data['text_cod_amount']   =$this->language->get('cod_amount');
+        $data['generate_label']   =$this->language->get('generate_label');
+        $data['renew']   =$this->language->get('renew');
+        ]]>
+      </add>
+    </operation>
+  </file>
+  <file path="admin/view/template/sale/order_info.twig" error="log">
+    <operation error="skip">
+      <search><![CDATA[<a href="{{ invoice }}" target="_blank" data-toggle="tooltip" title="{{ button_invoice_print }}" class="btn btn-info"><i class="fa fa-print"></i></a>            ]]></search>
+      <add position="replace"><![CDATA[
+        <a href="{{ omnivalt_label }}" target="_blank" data-toggle="tooltip" title="{{ generate_labels }}" class="btn btn-warning"><i class="fa fa-barcode"></i></a>
+        <a href="{{ invoice }}" target="_blank" data-toggle="tooltip" title="{{ button_invoice_print }}" class="btn btn-info"><i class="fa fa-print"></i></a>
+        ]]>
+      </add>
+    </operation>
+    <operation error="skip">
+      <search><![CDATA[<h3 class="panel-title"><i class="fa fa-user"></i> {{ text_customer_detail }}</h3>]]></search>
+      <add position="before"><![CDATA[
+        {% if 'omnivalt' in orderCarrier %}
+        <form method="POST" action="{{ editOmniva }}">
+          <input type="hidden" value="{{ order_id }}" name="order_id">
+          <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ heading_title }}</h3>
+        </div>
+        <table class="table">
+          <tbody>
+            <tr>
+              <td colspan="2">{{labels_count }}
+                <select name="labelsCount" id="labelsCount" class="form-control input-sm">
+                  <option value="1" selected="">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </td>
+              <td colspan="2">
+                {{ weight }} <input type="number" step="0.0001" name="omnivaWeight" class="form-control input-sm" value="{{ omnivaWeight }}">
+              </td>
+            </tr>
+            <tr>
+              <td colspan="2">C.O.D 
+                <select name="cod_available" class="form-control input-sm">
+                  <option value="0">Ne</option>
+                  <option value="1" {% if (payment_code == 'cod' or cod_amount > 0) and cod_amount != 888888 %} selected="" {% endif %}>Taip</option>
+                </select>
+              </td>
+              <td colspan="2">
+                {{text_cod_amount }}
+                <input type="text" name="cod_value" class="form-control input-sm" value="{% if cod_amount and cod_amount != 888888 %} {{ cod_amount }} {% else %} {{ orderTotal }} {% endif %}">
+              </td>
+            </tr>
+            <tr>
+              <td colspan="4">{{delivery_method }}
+                <select name="delivery_method" class="form-control input-sm">
+                  <option disabled>Select labels count</option>
+                  <option value="omnivalt.courier|OmnivaLt kurjeris">Omnivalt Courier</option>
+                  {{ parcel_terminals }}
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <input type="submit" name="update" class="btn btn-default btn-sm" value="{{renew }}">
+        <input type="submit" name="generateLabel" class="btn btn-default btn-sm" value="{{generate_label }}">
+        </div>
+        </form>
+        <div class="panel panel-default">
+        <div class="panel-heading">
+        {% endif %}
+        ]]>
+      </add>
+    </operation>
+  </file>
+  <file path="admin/view/template/sale/order_list.twig" error="log">
+    <operation error="skip">
+      <search><![CDATA[<button type="button" data-toggle="tooltip" title="{{ button_filter }}"]]></search>
+      <add position="before"><![CDATA[
+        <button type="submit" id="button-omnivalt-labels" form="form-order" formaction="{{ omnivalt_label }}" formtarget="_blank" data-toggle="tooltip" title="{{ generate_labels }}" class="btn btn-warning"><i class="fa fa-barcode"></i></button>
+        <button type="submit" id="button-omnivalt-manifests" form="form-order" formaction="{{ omnivalt_manifest }}" formtarget="_blank" data-toggle="tooltip" title="{{ text_manifest }}" class="btn btn-info"><i class="fa fa-file-text"></i></button>
+        ]]>
+      </add>
+    </operation>
+    <operation error="skip">
+      <search><![CDATA[<script src="view/javascript/jquery/datetimepicker/bootstrap-datetimepicker.min.js" type="text/javascript"></script>]]></search>
+      <add position="before"><![CDATA[
+        <script type="text/javascript"><!--
+        $('#form-order input[type=\'checkbox\']:first').on('change', function(e) {
+          $('input[name*=\'selected\']:first').trigger('change');
+        });
+        $('input[name^=\'selected\']').on('change', function() {
+	        $('#button-omnivalt-labels, #button-omnivalt-manifests').prop('disabled', true);
+
+	        var selected = $('input[name^=\'selected\']:checked');
+
+          if (selected.length) {
+            $('#button-omnivalt-labels, #button-omnivalt-manifests').prop('disabled', false);
+          }
+        });
+
+        $('#button-omnivalt-labels, #button-omnivalt-manifests').prop('disabled', true);
+
+        // IE and Edge fix!
+        $('#button-omnivalt-labels, #button-omnivalt-manifests').on('click', function(e) {
+          $('#form-order').attr('action', this.getAttribute('formAction'));
+        }); //-->
+        </script>
+        ]]>
+      </add>
+    </operation>
+    <operation error="skip">
+      <search><![CDATA[<td class="text-left">{{ order.customer }}</td>]]></search>
+      <add position="replace"><![CDATA[
+        <td class="text-left">{{ order.customer }}
+          {% if 'omnivalt' in order["shipping_code"] %}
+          <img src="./view/image/omniva-lt.png" alt="Omniva LT" height="20">
+          {% endif %}
+        </td>
+        ]]>
+      </add>
+    </operation>
+  </file>
+  <file path="admin/model/sale/order.php" error="log">
+    <operation error="skip">
+      <search><![CDATA[ $order_query->row['date_modified']]]></search>
+      <add position="after"><![CDATA[
+        ,'labelsCount'           => $order_query->row['labelsCount'],
+        'omnivaWeight'           => $order_query->row['omnivaWeight'],
+        'cod_amount'             => $order_query->row['cod_amount'],
+        'omniva_image_url'       => HTTPS_SERVER . 'view/image/omniva-lt.png'
+        ]]>
+      </add>
+    </operation>
+  </file>
+</modification>

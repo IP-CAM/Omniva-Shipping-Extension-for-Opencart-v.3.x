@@ -10,7 +10,6 @@ class ModelExtensionShippingOmnivalt extends Model
 {
   public function getQuote($address)
   {
-
     $currency_carrier = "EUR";
     $total_kg = $this->cart->getWeight();
     $weight_class_id = $this->config->get('config_weight_class_id');
@@ -19,15 +18,17 @@ class ModelExtensionShippingOmnivalt extends Model
     if ($unit == 'g') {
       $total_kg /= 1000;
     }
+    //echo $total_kg; die;
     $this->load->language('extension/shipping/omnivalt');
 
     $method_data = array();
+    //if ($total_kg > 9) return $method_data;
     $service_Actives = $this->config->get('shipping_omnivalt_service');
 
     if (is_array($service_Actives) && count($service_Actives) && ($address['iso_code_2'] == 'LT' ||
       $address['iso_code_2'] == 'LV' ||
       $address['iso_code_2'] == 'EE')) {
-      foreach ($service_Actives as $key => $service_Active) {
+      foreach ($service_Actives as $service_Active) {
         $price_target = 'shipping_omnivalt_' . $service_Active . '_price';
         if ($address['iso_code_2'] != 'LT' && ($address['iso_code_2'] == 'LV' || $address['iso_code_2'] == 'EE')) {
           $price_target .= strtolower($address['iso_code_2']);
@@ -57,50 +58,52 @@ class ModelExtensionShippingOmnivalt extends Model
 
         $title = $this->language->get('text_' . $service_Active);
         $codeCarrier = "omnivalt";
-        if ($service_Active == "parcel_terminal") {
-          $cabins = $this->config->get('omnivalt_terminals_LT');
-          $terminals = $this->groupTerminals($cabins, $address['iso_code_2']);
-          $cost = $this->currency->convert($price, $currency_carrier, $this->config->get('config_currency'));
-          $sort_order = $this->config->get('shipping_omnivalt_sort_order');
-          $text = $this->currency->format(
-            $this->currency->convert(
-              $price,
-              $currency_carrier,
-              $this->session->data['currency']
-            ),
-            $this->session->data['currency']
-          );
-
-          foreach ($terminals as $code => $terminal) {
-            $quote_data[$service_Active . "_$code"] = array(
-              'code' => $codeCarrier . '.' . $service_Active . "_$code",
-              'title' => $terminal,
-              'head' => $title,
-              //'terminals' => $terminals,
-              'cost' => $cost,
-              'tax_class_id' => 0,
-              'sort_order' => $sort_order,
-              'text' => $text,
-            );
-          }
-        } else { // courier
-          $quote_data[$service_Active] = array(
-            'code' => $codeCarrier . '.' . $service_Active,
-            'title' => $title,
-            'head' => $title,
-            //'terminals' => $terminals,
-            'cost' => $this->currency->convert($price, $currency_carrier, $this->config->get('config_currency')),
-            'tax_class_id' => 0,
-            'sort_order' => $this->config->get('shipping_omnivalt_sort_order'),
-            'text' => $this->currency->format(
+        switch ($service_Active) {
+          case 'parcel_terminal':
+            $cabins = $this->config->get('omnivalt_terminals_LT');
+            $terminals = $this->groupTerminals($cabins, $address['iso_code_2']);
+            $cost = $this->currency->convert($price, $currency_carrier, $this->config->get('config_currency'));
+            $sort_order = $this->config->get('shipping_omnivalt_sort_order');
+            $text = $this->currency->format(
               $this->currency->convert(
                 $price,
                 $currency_carrier,
                 $this->session->data['currency']
               ),
               $this->session->data['currency']
-            ),
-          );
+            );
+
+            foreach ($terminals as $code => $terminal) {
+              $quote_data[$service_Active . "_$code"] = array(
+                'code' => $codeCarrier . '.' . $service_Active . "_$code",
+                'title' => $terminal,
+                'head' => $title,
+                'cost' => $cost,
+                'tax_class_id' => 0,
+                'sort_order' => $sort_order,
+                'text' => $text,
+              );
+            }
+            break;
+
+          case 'courier':
+            $quote_data[$service_Active] = array(
+              'code' => $codeCarrier . '.' . $service_Active,
+              'title' => $title,
+              'head' => $title,
+              'cost' => $this->currency->convert($price, $currency_carrier, $this->config->get('config_currency')),
+              'tax_class_id' => 0,
+              'sort_order' => $this->config->get('shipping_omnivalt_sort_order'),
+              'text' => $this->currency->format(
+                $this->currency->convert(
+                  $price,
+                  $currency_carrier,
+                  $this->session->data['currency']
+                ),
+                $this->session->data['currency']
+              ),
+            );
+            break;
         }
       }
 
@@ -143,18 +146,14 @@ class ModelExtensionShippingOmnivalt extends Model
 
   public function getTerminalForMap($country = "LT")
   {
-
-    //$country = $this->getCountryForMap($country);
-
     $terminals_json_file_dir = DIR_DOWNLOAD . "locations.json";
     $terminals_file = fopen($terminals_json_file_dir, "r");
     $terminals = fread($terminals_file, filesize($terminals_json_file_dir) + 10);
     fclose($terminals_file);
     $terminals = json_decode($terminals, true);
 
-    $parcel_terminals = '';
-
     if (is_array($terminals)) {
+      $grouped_options = array();
       $terminalsList = array();
       foreach ($terminals as $terminal) {
         if ($terminal['A0_NAME'] != $country && in_array($country, array("LT", "EE", "LV")) || intval($terminal['TYPE']) == 1)
