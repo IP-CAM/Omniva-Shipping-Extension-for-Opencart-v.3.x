@@ -79,6 +79,9 @@ class ControllerExtensionShippingOmnivalt extends Controller
       'catalog/view/checkout/shipping_method/before',
       'extension/module/omnivalt/default/changeTemplate'
     );
+
+    // Install modificationif needed
+    $this->installModification();
   }
 
   public function uninstall()
