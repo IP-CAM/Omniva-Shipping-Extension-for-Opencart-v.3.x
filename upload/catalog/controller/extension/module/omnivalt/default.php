@@ -44,14 +44,13 @@ class ControllerExtensionModuleOmnivaltDefault extends Controller
     $this->load->language('extension/shipping/omnivalt');
     $data['omniva_map_translation'] = [
       'modal_header' => $this->language->get('text_omniva_map_head'),
-      'terminal_addresses' => $this->language->get('text_omniva_terminal_address'),
-      'text_select_terminal' => $this->language->get('text_select_omn_terminal'),
-      'text_search_placeholder' => $this->language->get('text_omniva_search'),
-      'not_found' => $this->language->get('text_omniva_not_found'),
-      'text_enter_address' => $this->language->get('text_omniva_search'),
-      'text_show_in_map' => $this->language->get('text_omniva_show_map'),
-      'text_show_more' => $this->language->get('text_omniva_show_more'),
-      'text_back_to_list' => $this->language->get('text_omniva_back_to_list')
+      'search_bar_title' => $this->language->get('text_omniva_terminal_address'),
+      'select_terminal' => $this->language->get('text_select_omn_terminal'),
+      'search_bar_placeholder' => $this->language->get('text_omniva_search'),
+      'place_not_found' => $this->language->get('text_omniva_not_found'),
+      'show_on_map' => $this->language->get('text_omniva_show_map'),
+      'show_more' => $this->language->get('text_omniva_show_more'),
+      'search_back_to_list' => $this->language->get('text_omniva_back_to_list')
     ];
 
     // some checkouts messes up selected shipping method

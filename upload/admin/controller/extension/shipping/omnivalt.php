@@ -10,6 +10,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
 {
   private $error = array();
   private $defaulCodename = 'Omnivalt Mod Default';
+  private $version = '1.0.3';
 
   public function install()
   {
@@ -139,6 +140,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
     }
 
     // Header data
+    $data['version'] = $this->version;
     $data['breadcrumbs'] = array();
     $data['breadcrumbs'][] = array(
       'text' => $this->language->get('text_home'),
@@ -340,7 +342,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
     $countries = array();
     $countries['LT'] = 1;
     $countries['LV'] = 2;
-    //$countries['EE'] = 3;
+    $countries['EE'] = 3;
     $terminals = $this->parseCSV($csv, $countries);
     if (isset($terminals['failed'])) {
       return ['failed' => $terminals['failed']];
