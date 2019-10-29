@@ -264,10 +264,10 @@ class ControllerExtensionShippingOmnivalt extends Controller
       );
     }
 
-    $data['shipping_omnivalt_terminals'] = $this->config->get('omnivalt_terminals_LT');
+    $data['shipping_omnivalt_terminals'] = $this->loadTerminals();
     $data['terminal_count'] = $this->language->get('terminal_count');
     if (isset($data['shipping_omnivalt_terminals'])) {
-      $data['terminal_count'] = count($this->config->get('omnivalt_terminals_LT'));
+      $data['terminal_count'] = count($data['shipping_omnivalt_terminals']);
     }
 
     $data['cron_link'] = HTTPS_CATALOG . 'index.php?route=extension/module/omnivalt/update_terminals';
@@ -330,6 +330,20 @@ class ControllerExtensionShippingOmnivalt extends Controller
     return !$this->error;
   }
 
+  private function loadTerminals()
+  {
+    $terminals_json_file_dir = DIR_DOWNLOAD."omniva_terminals.json";
+    if (!file_exists($terminals_json_file_dir))
+      return false;
+    $terminals_file = fopen($terminals_json_file_dir, "r");
+    if (!$terminals_file)
+      return false;
+    $terminals = fread($terminals_file, filesize($terminals_json_file_dir) + 10);
+    fclose($terminals_file);
+    $terminals = json_decode($terminals, true);
+    return $terminals;
+  }
+
   private function fetchUpdates()
   {
     $csv = $this->fetchURL('https://www.omniva.ee/locations.csv');
@@ -347,12 +361,10 @@ class ControllerExtensionShippingOmnivalt extends Controller
     if (isset($terminals['failed'])) {
       return ['failed' => $terminals['failed']];
     }
-    $this->model_setting_setting->editSetting(
-      'omnivalt_terminals',
-      array(
-        'omnivalt_terminals_LT' => ($terminals ? $terminals : array())
-      )
-    );
+    $terminals = $terminals ? $terminals : array();
+    $fp = fopen(DIR_DOWNLOAD."omniva_terminals.json", "w");
+    fwrite($fp, json_encode($terminals));
+    fclose($fp);
 
     $this->csvTerminal();
     return ['success' => 'Terminals updated']; // TODO: translate

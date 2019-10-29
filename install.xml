@@ -28,7 +28,7 @@
         $data['labelsCount'] = $order_info['labelsCount'];
         $data['omnivaWeight'] = $order_info['omnivaWeight'];
         $data['cod_amount'] = $order_info['cod_amount'];
-        $data['omniva_terminals'] = $this->config->get('omnivalt_terminals_LT');
+        $data['omniva_terminals'] = $this->loadTerminals();
         $data['shipping_code'] = $order_info['shipping_code'];
         $data['editOmniva'] = $this->url->link('extension/shipping/omnivalt/prints/editLabel', 'user_token=' . $this->session->data['user_token']. '&order_id='.$data['order_id'], true);
         $data['payment_code'] = $order_info['payment_code'];
@@ -37,7 +37,7 @@
 
         $data['parcel_terminals'] = null;
         if(substr($order_info['shipping_code'], 0, 8) == 'omnivalt') {
-          $omniva_terminals = $this->config->get('omnivalt_terminals_LT');
+          $omniva_terminals = $this->loadTerminals();
           $grouped_options = array();
           $parcel_terminals = '';
           $shipping_code = $order_info['shipping_code'];
@@ -65,6 +65,25 @@
         $data['text_cod_amount']   =$this->language->get('cod_amount');
         $data['generate_label']   =$this->language->get('generate_label');
         $data['renew']   =$this->language->get('renew');
+        ]]>
+      </add>
+    </operation>
+    <operation error="skip">
+      <search><![CDATA[class ControllerSaleOrder extends Controller {]]></search>
+      <add position="after"><![CDATA[
+        private function loadTerminals()
+        {
+          $terminals_json_file_dir = DIR_DOWNLOAD."omniva_terminals.json";
+          if (!file_exists($terminals_json_file_dir))
+            return false;
+          $terminals_file = fopen($terminals_json_file_dir, "r");
+          if (!$terminals_file)
+            return false;
+          $terminals = fread($terminals_file, filesize($terminals_json_file_dir) + 10);
+          fclose($terminals_file);
+          $terminals = json_decode($terminals, true);
+          return $terminals;
+        }
         ]]>
       </add>
     </operation>
