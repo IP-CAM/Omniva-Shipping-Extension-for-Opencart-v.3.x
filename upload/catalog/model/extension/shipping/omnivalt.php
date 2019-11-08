@@ -58,6 +58,7 @@ class ModelExtensionShippingOmnivalt extends Model
 
         $title = $this->language->get('text_' . $service_Active);
         $codeCarrier = "omnivalt";
+        $tax_class_id = $this->config->get('shipping_omnivalt_tax_class_id');
         switch ($service_Active) {
           case 'parcel_terminal':
             $cabins = $this->loadTerminals();
@@ -65,10 +66,10 @@ class ModelExtensionShippingOmnivalt extends Model
             $cost = $this->currency->convert($price, $currency_carrier, $this->config->get('config_currency'));
             $sort_order = $this->config->get('shipping_omnivalt_sort_order');
             $text = $this->currency->format(
-              $this->currency->convert(
-                $price,
-                $currency_carrier,
-                $this->session->data['currency']
+              $this->tax->calculate(
+                $this->currency->convert($price, $currency_carrier, $this->session->data['currency']),
+                $tax_class_id,
+                $this->config->get('config_tax')
               ),
               $this->session->data['currency']
             );
@@ -79,7 +80,7 @@ class ModelExtensionShippingOmnivalt extends Model
                 'title' => $terminal,
                 'head' => $title,
                 'cost' => $cost,
-                'tax_class_id' => 0,
+                'tax_class_id' => $tax_class_id,
                 'sort_order' => $sort_order,
                 'text' => $text,
               );
@@ -92,13 +93,13 @@ class ModelExtensionShippingOmnivalt extends Model
               'title' => $title,
               'head' => $title,
               'cost' => $this->currency->convert($price, $currency_carrier, $this->config->get('config_currency')),
-              'tax_class_id' => 0,
+              'tax_class_id' => $tax_class_id,
               'sort_order' => $this->config->get('shipping_omnivalt_sort_order'),
               'text' => $this->currency->format(
-                $this->currency->convert(
-                  $price,
-                  $currency_carrier,
-                  $this->session->data['currency']
+                $this->tax->calculate(
+                  $this->currency->convert($price, $currency_carrier, $this->session->data['currency']),
+                  $tax_class_id,
+                  $this->config->get('config_tax')
                 ),
                 $this->session->data['currency']
               ),

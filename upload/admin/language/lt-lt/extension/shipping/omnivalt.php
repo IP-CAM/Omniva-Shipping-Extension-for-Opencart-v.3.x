@@ -110,3 +110,5 @@ $_['pickup_header']     = "Išsiuntimo duomenys";
 $_['terminals_header']  = "Terminalų informacija";
 $_['terminal_count']    = "Terminalų sąrašo nėra. Išsaugokite nustatymus ir spauskite 'Atnaujinti terminalus' mygtuką.";
 $_['call_courier']      = "Kviesti Omniva kurjerį";
+
+$_['entry_tax_class']   = "Mokesčių klasė";

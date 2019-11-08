@@ -109,3 +109,5 @@ $_['pickup_header']     = "Pickup settings";
 $_['terminals_header']  = "Terminals information";
 $_['terminal_count']    = "Save settings and press 'Update parcel terminals' button to get terminal list.";
 $_['call_courier']      = "Call Omniva courier";
+
+$_['entry_tax_class']   = "Tax class";

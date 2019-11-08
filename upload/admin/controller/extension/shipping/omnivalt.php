@@ -172,7 +172,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
       'entry_courier_price', 'entry_terminals', 'button_save', 'button_save_exit', 'button_cancel', 'button_download', 'entry_sender_name',
       'entry_sender_address', 'entry_sender_city', 'entry_sender_postcode', 'entry_sender_phone', 'entry_sender_country_code', 'button_update_terminals',
       'button_save_exit', 'webservice_header', 'sender_header', 'services_header', 'prices_header', 'cod_header', 'pickup_header', 'terminals_header',
-      'option_lt', 'option_lv', 'option_ee'
+      'option_lt', 'option_lv', 'option_ee', 'entry_tax_class'
     ) as $key) {
       $data[$key] = $this->language->get($key);
     }
@@ -228,7 +228,9 @@ class ControllerExtensionShippingOmnivalt extends Controller
       // Extension status (enabled/disabled)
       'status',
       // Place in carriers list
-      'sort_order'
+      'sort_order',
+      // Tax class ID: 0 to disable
+      'tax_class_id'
     );
 
     foreach ($settings_fields as $key) {
@@ -271,6 +273,10 @@ class ControllerExtensionShippingOmnivalt extends Controller
     }
 
     $data['cron_link'] = HTTPS_CATALOG . 'index.php?route=extension/module/omnivalt/update_terminals';
+
+    // Get all tax classes information
+    $this->load->model('localisation/tax_class');
+    $data['tax_classes'] = $this->model_localisation_tax_class->getTaxClasses();
 
     $data['header'] = $this->load->controller('common/header');
     $data['column_left'] = $this->load->controller('common/column_left');
