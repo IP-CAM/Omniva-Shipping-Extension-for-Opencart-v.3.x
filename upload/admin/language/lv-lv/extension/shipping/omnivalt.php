@@ -109,3 +109,5 @@ $_['pickup_header']     = "Pika iestatījumi";
 $_['terminals_header']  = "Informācija par termināļiem";
 $_['terminal_count']    = "Saglabājiet iestatījumus un nospiediet pogu 'Atjaunināt pakomātu sarakstu'.";
 $_['call_courier']      = "Zvaniet Omniva kurjeram";
+
+$_['entry_tax_class']   = "Nodokļu klase";

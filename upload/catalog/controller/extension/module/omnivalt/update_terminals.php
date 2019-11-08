@@ -29,19 +29,16 @@ class ControllerExtensionModuleOmnivaltUpdateTerminals extends Controller
     $cabins = $this->parseCSV($csv, $countries);
     if ($cabins) {
       $terminals = $cabins;
+      $fp = fopen(DIR_DOWNLOAD."omniva_terminals.json", "w");
+      fwrite($fp, json_encode($terminals));
+      fclose($fp);
     }
-
-    $key = 'omnivalt_terminals_LT';
-    $this->db->query("UPDATE " . DB_PREFIX . "setting
-         SET `value` = '" . $this->db->escape(json_encode($terminals)) . "', serialized = '1'
-         WHERE `key` = '" . $this->db->escape($key) . "'");
 
     $this->csvTerminal();
   }
 
   public function csvTerminal()
   {
-
     $url = 'https://www.omniva.ee/locations.json';
     $fp = fopen(DIR_DOWNLOAD . "locations.json", "w");
     $curl = curl_init();

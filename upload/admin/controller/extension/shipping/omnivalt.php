@@ -10,6 +10,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
 {
   private $error = array();
   private $defaulCodename = 'Omnivalt Mod Default';
+  private $version = '1.0.3';
 
   public function install()
   {
@@ -139,6 +140,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
     }
 
     // Header data
+    $data['version'] = $this->version;
     $data['breadcrumbs'] = array();
     $data['breadcrumbs'][] = array(
       'text' => $this->language->get('text_home'),
@@ -170,7 +172,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
       'entry_courier_price', 'entry_terminals', 'button_save', 'button_save_exit', 'button_cancel', 'button_download', 'entry_sender_name',
       'entry_sender_address', 'entry_sender_city', 'entry_sender_postcode', 'entry_sender_phone', 'entry_sender_country_code', 'button_update_terminals',
       'button_save_exit', 'webservice_header', 'sender_header', 'services_header', 'prices_header', 'cod_header', 'pickup_header', 'terminals_header',
-      'option_lt', 'option_lv', 'option_ee'
+      'option_lt', 'option_lv', 'option_ee', 'entry_tax_class'
     ) as $key) {
       $data[$key] = $this->language->get($key);
     }
@@ -226,7 +228,9 @@ class ControllerExtensionShippingOmnivalt extends Controller
       // Extension status (enabled/disabled)
       'status',
       // Place in carriers list
-      'sort_order'
+      'sort_order',
+      // Tax class ID: 0 to disable
+      'tax_class_id'
     );
 
     foreach ($settings_fields as $key) {
@@ -262,13 +266,17 @@ class ControllerExtensionShippingOmnivalt extends Controller
       );
     }
 
-    $data['shipping_omnivalt_terminals'] = $this->config->get('omnivalt_terminals_LT');
+    $data['shipping_omnivalt_terminals'] = $this->loadTerminals();
     $data['terminal_count'] = $this->language->get('terminal_count');
     if (isset($data['shipping_omnivalt_terminals'])) {
-      $data['terminal_count'] = count($this->config->get('omnivalt_terminals_LT'));
+      $data['terminal_count'] = count($data['shipping_omnivalt_terminals']);
     }
 
     $data['cron_link'] = HTTPS_CATALOG . 'index.php?route=extension/module/omnivalt/update_terminals';
+
+    // Get all tax classes information
+    $this->load->model('localisation/tax_class');
+    $data['tax_classes'] = $this->model_localisation_tax_class->getTaxClasses();
 
     $data['header'] = $this->load->controller('common/header');
     $data['column_left'] = $this->load->controller('common/column_left');
@@ -328,6 +336,20 @@ class ControllerExtensionShippingOmnivalt extends Controller
     return !$this->error;
   }
 
+  private function loadTerminals()
+  {
+    $terminals_json_file_dir = DIR_DOWNLOAD."omniva_terminals.json";
+    if (!file_exists($terminals_json_file_dir))
+      return false;
+    $terminals_file = fopen($terminals_json_file_dir, "r");
+    if (!$terminals_file)
+      return false;
+    $terminals = fread($terminals_file, filesize($terminals_json_file_dir) + 10);
+    fclose($terminals_file);
+    $terminals = json_decode($terminals, true);
+    return $terminals;
+  }
+
   private function fetchUpdates()
   {
     $csv = $this->fetchURL('https://www.omniva.ee/locations.csv');
@@ -340,17 +362,15 @@ class ControllerExtensionShippingOmnivalt extends Controller
     $countries = array();
     $countries['LT'] = 1;
     $countries['LV'] = 2;
-    //$countries['EE'] = 3;
+    $countries['EE'] = 3;
     $terminals = $this->parseCSV($csv, $countries);
     if (isset($terminals['failed'])) {
       return ['failed' => $terminals['failed']];
     }
-    $this->model_setting_setting->editSetting(
-      'omnivalt_terminals',
-      array(
-        'omnivalt_terminals_LT' => ($terminals ? $terminals : array())
-      )
-    );
+    $terminals = $terminals ? $terminals : array();
+    $fp = fopen(DIR_DOWNLOAD."omniva_terminals.json", "w");
+    fwrite($fp, json_encode($terminals));
+    fclose($fp);
 
     $this->csvTerminal();
     return ['success' => 'Terminals updated']; // TODO: translate

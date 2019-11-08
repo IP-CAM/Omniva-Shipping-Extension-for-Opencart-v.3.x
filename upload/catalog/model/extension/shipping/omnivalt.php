@@ -58,17 +58,18 @@ class ModelExtensionShippingOmnivalt extends Model
 
         $title = $this->language->get('text_' . $service_Active);
         $codeCarrier = "omnivalt";
+        $tax_class_id = $this->config->get('shipping_omnivalt_tax_class_id');
         switch ($service_Active) {
           case 'parcel_terminal':
-            $cabins = $this->config->get('omnivalt_terminals_LT');
+            $cabins = $this->loadTerminals();
             $terminals = $this->groupTerminals($cabins, $address['iso_code_2']);
             $cost = $this->currency->convert($price, $currency_carrier, $this->config->get('config_currency'));
             $sort_order = $this->config->get('shipping_omnivalt_sort_order');
             $text = $this->currency->format(
-              $this->currency->convert(
-                $price,
-                $currency_carrier,
-                $this->session->data['currency']
+              $this->tax->calculate(
+                $this->currency->convert($price, $currency_carrier, $this->session->data['currency']),
+                $tax_class_id,
+                $this->config->get('config_tax')
               ),
               $this->session->data['currency']
             );
@@ -79,7 +80,7 @@ class ModelExtensionShippingOmnivalt extends Model
                 'title' => $terminal,
                 'head' => $title,
                 'cost' => $cost,
-                'tax_class_id' => 0,
+                'tax_class_id' => $tax_class_id,
                 'sort_order' => $sort_order,
                 'text' => $text,
               );
@@ -92,13 +93,13 @@ class ModelExtensionShippingOmnivalt extends Model
               'title' => $title,
               'head' => $title,
               'cost' => $this->currency->convert($price, $currency_carrier, $this->config->get('config_currency')),
-              'tax_class_id' => 0,
+              'tax_class_id' => $tax_class_id,
               'sort_order' => $this->config->get('shipping_omnivalt_sort_order'),
               'text' => $this->currency->format(
-                $this->currency->convert(
-                  $price,
-                  $currency_carrier,
-                  $this->session->data['currency']
+                $this->tax->calculate(
+                  $this->currency->convert($price, $currency_carrier, $this->session->data['currency']),
+                  $tax_class_id,
+                  $this->config->get('config_tax')
                 ),
                 $this->session->data['currency']
               ),
@@ -121,6 +122,20 @@ class ModelExtensionShippingOmnivalt extends Model
     }
     $this->session->data['omniva_country_loaded'] = $address['country_id'];
     return $method_data;
+  }
+
+  private function loadTerminals()
+  {
+    $terminals_json_file_dir = DIR_DOWNLOAD."omniva_terminals.json";
+    if (!file_exists($terminals_json_file_dir))
+      return false;
+    $terminals_file = fopen($terminals_json_file_dir, "r");
+    if (!$terminals_file)
+      return false;
+    $terminals = fread($terminals_file, filesize($terminals_json_file_dir) + 10);
+    fclose($terminals_file);
+    $terminals = json_decode($terminals, true);
+    return $terminals;
   }
 
   private function groupTerminals($terminals, $country = 'LT', $selected = '')
