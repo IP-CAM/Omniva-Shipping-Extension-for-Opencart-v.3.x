@@ -10,13 +10,13 @@ class ControllerExtensionShippingOmnivalt extends Controller
 {
   private $error = array();
   private $defaulCodename = 'Omnivalt Mod Default';
-  private $version = '1.0.3';
+  private $version = '1.0.4';
 
   public function install()
   {
     // Add aditional columns into order table
     $sql = "
-      ALTER TABLE " . DB_PREFIX . "order 
+      ALTER TABLE `" . DB_PREFIX . "order` 
       ADD `labelsCount` INT NOT NULL DEFAULT '1',
       ADD `omnivaWeight` FLOAT NOT NULL DEFAULT '1',
       ADD `cod_amount` FLOAT DEFAULT 0;
@@ -24,7 +24,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
     $this->db->query($sql);
     // Add order_omniva table to database
     $sql2 = "
-      CREATE TABLE " . DB_PREFIX . "order_omniva (
+      CREATE TABLE `" . DB_PREFIX . "order_omniva` (
         id int NOT NULL AUTO_INCREMENT, 
         tracking TEXT, 
         manifest int, 
@@ -89,7 +89,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
   {
     // Remove modification to order table
     $sql = "
-      ALTER TABLE " . DB_PREFIX . "order
+      ALTER TABLE `" . DB_PREFIX . "order`
       DROP COLUMN labelsCount,
       DROP COLUMN omnivaWeight,
       DROP COLUMN cod_amount;
@@ -97,7 +97,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
     $this->db->query($sql);
 
     // Remove order_omniva table (all unsaved information will be lost)
-    $sql2 = "DROP TABLE " . DB_PREFIX . "order_omniva";
+    $sql2 = "DROP TABLE `" . DB_PREFIX . "order_omniva`";
     $this->db->query($sql2);
 
     // Remove modification from database
@@ -460,7 +460,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
   {
     $this->db->query(
       "
-      INSERT INTO " . DB_PREFIX . "modification 
+      INSERT INTO `" . DB_PREFIX . "modification` 
       SET code = '" . $this->db->escape($data['code']) . "', name = '" . $this->db->escape($data['name']) . "', 
       author = '" . $this->db->escape($data['author']) . "', version = '" . $this->db->escape($data['version']) . "', 
       link = '" . $this->db->escape($data['link']) . "', xml = '" . $this->db->escape($data['xml']) . "', 
@@ -473,7 +473,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
   {
     $this->db->query(
       "
-      UPDATE " . DB_PREFIX . "modification 
+      UPDATE `" . DB_PREFIX . "modification` 
       SET code = '" . $this->db->escape($data['code']) . "', name = '" . $this->db->escape($data['name']) . "', 
       author = '" . $this->db->escape($data['author']) . "', version = '" . $this->db->escape($data['version']) . "', 
       link = '" . $this->db->escape($data['link']) . "', xml = '" . $this->db->escape($data['xml']) . "', 
@@ -486,7 +486,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
   {
     $this->db->query(
       "
-      REMOVE FROM " . DB_PREFIX . "modification 
+      REMOVE FROM `" . DB_PREFIX . "modification` 
       WHERE modification_id = " . $id
     );
   }
@@ -530,7 +530,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
 
   protected function getModificationByCode($code)
   {
-    $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "modification WHERE code = '" . $this->db->escape($code) . "'");
+    $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "modification` WHERE code = '" . $this->db->escape($code) . "'");
 
     return $query->row;
   }
