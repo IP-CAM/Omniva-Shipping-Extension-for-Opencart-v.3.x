@@ -19,9 +19,9 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 		$query = $this->db->query(
 			"
 			SELECT SUM(IF(wcd.unit ='g',(p.weight/1000),p.weight) * op.quantity) AS weight 
-			FROM " . DB_PREFIX . "order_product op 
-			LEFT JOIN " . DB_PREFIX . "product p ON op.product_id = p.product_id 
-			LEFT JOIN " . DB_PREFIX . "weight_class_description wcd ON wcd.weight_class_id = p.weight_class_id AND wcd.language_id = '" . (int) $this->config->get('config_language_id') . "' 
+			FROM `" . DB_PREFIX . "order_product` op 
+			LEFT JOIN `" . DB_PREFIX . "product` p ON op.product_id = p.product_id 
+			LEFT JOIN `" . DB_PREFIX . "weight_class_description` wcd ON wcd.weight_class_id = p.weight_class_id AND wcd.language_id = '" . (int) $this->config->get('config_language_id') . "' 
 			WHERE op.order_id = '" . (int) $order_id . "'
 			"
 		);
@@ -55,7 +55,7 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 		$this->sendNotification($id_order);
 		$isPrinted = $this->db->query(
 			"
-			SELECT * FROM " . DB_PREFIX . "order_omniva 
+			SELECT * FROM `" . DB_PREFIX . "order_omniva` 
 			WHERE id_order=" . $id_order . ";
 			"
 		);
@@ -70,7 +70,7 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 
 			$this->db->query(
 				"
-				UPDATE " . DB_PREFIX . "order_omniva 
+				UPDATE `" . DB_PREFIX . "order_omniva` 
 				SET tracking='" . json_encode($trackingArr) . "' 
 				WHERE id_order=" . $id_order . ";
 				"
@@ -80,7 +80,7 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 			$tracking = json_encode($tracking);
 			$this->db->query(
 				"
-				INSERT INTO " . DB_PREFIX . "order_omniva (tracking, manifest, labels, id_order)
+				INSERT INTO `" . DB_PREFIX . "order_omniva` (tracking, manifest, labels, id_order)
 				VALUES ('$tracking','$manifest','$label','$id_order')
 				"
 			);
@@ -583,25 +583,25 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 
 			if ($cod_available == 1 && $cod_value > 0) {
 				$sql = "
-					UPDATE " . DB_PREFIX . "order 
+					UPDATE `" . DB_PREFIX . "order` 
 					SET labelsCount = $labelsCount , omnivaWeight = $omnivaWeight , shipping_code = '" . $delivery_method . "' ,
           shipping_method = '" . $delivery_methodName . "', cod_amount = $cod_value
 					WHERE order_id= $order_id;
 					";
 
-				$sql2 = "UPDATE " . DB_PREFIX . "order_total SET title = '" . $delivery_methodName . "' WHERE order_id= $order_id AND code = 'shipping';";
+				$sql2 = "UPDATE `" . DB_PREFIX . "order_total` SET title = '" . $delivery_methodName . "' WHERE order_id= $order_id AND code = 'shipping';";
 				$this->db->query($sql);
 				$this->db->query($sql2);
 			} else {
 				$sql = "
-					UPDATE " . DB_PREFIX . "order 
+					UPDATE `" . DB_PREFIX . "order` 
 					SET labelsCount = $labelsCount , omnivaWeight = $omnivaWeight , shipping_code = '" . $delivery_method . "' ,
           shipping_method = '" . $delivery_methodName . "', cod_amount = 888888
 					WHERE order_id= $order_id;
 					";
 
 				$sql2 = "
-					UPDATE " . DB_PREFIX . "order_total 
+					UPDATE `" . DB_PREFIX . "order_total` 
 					SET title = '" . $delivery_methodName . "' 
 					WHERE order_id= $order_id AND code = 'shipping';
 					";
