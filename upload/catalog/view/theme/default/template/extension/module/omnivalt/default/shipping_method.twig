@@ -6,19 +6,23 @@
   {% for key, shipping_method in shipping_methods %}
     {% if methods_mapping[key] == 'omnivalt' %}
       <script>
+        var omniva_country = '{{ omniva_country }}';
+        var omniva_terminals = {{ omniva_locations|json_encode() }};
+      </script>
+      <script>
         $(document).ready(function () {
           var omnivaModuleReady = false;
           var omniva_map_translation = {{ omniva_map_translation|json_encode() }};
           $(document).on('click', 'input[type="radio"][name="shipping_method"]', function (e) {
             if ($(this).val().includes('fake.parcel') && !omnivaModuleReady) {
               omnivaModuleReady = $(this).omniva({
-                country_code: '{{ omniva_country }}',
+                country_code: omniva_country,
                 path_to_img: 'image/catalog/omniva/',
                 callback: function (id) {
                   omnivaModuleReady.val('omnivalt.parcel_terminal_' + id);
                 },
                 translate: omniva_map_translation,
-                terminals: {{ omniva_locations|json_encode() }},
+                terminals: omniva_terminals,
               });
               omnivaModuleReady.trigger('omniva.show');
               // with default template this should be enough even if user changes postcode (as he needs to press continue button)
@@ -54,56 +58,21 @@
     {% endif %}
     <p><strong>{{ shipping_method.title }}</strong></p>
     {% if not shipping_method.error %}
-      {# Omniva courier #}
-      {% if shipping_method.quote['courier'] is defined %}
-        {% set quote = shipping_method.quote['courier'] %}
-        <div class="radio">
-          <label>
-            {% if quote.code == code or not code %}
-              {% set code = quote.code %}
-              <input type="radio" name="shipping_method" value="{{ quote.code }}" checked="checked"/>
-            {% else %}
-              <input type="radio" name="shipping_method" value="{{ quote.code }}"/>
-            {% endif %}
-            {{ quote.title }} - {{ quote.text }}
-          </label>
-        </div>
-      {% endif %}
-      {# Omniva Parcel terminal #}
-      {% if shipping_method.quote|length > 1 %} {# there is terminals #}
-        {# need to grab first terminal to get price and name for radio label #}
-        {% set found = false %}
-        {% for quote in shipping_method.quote if quote.code starts with 'omnivalt.parcel' and not found %}
-          {% set found = quote %}
-        {% endfor %}
-        <div class="radio">
-          <label>
-            {% if not code %}
-              {% set code = found.code %}
-              <input id="omniva_terminal" type="radio" name="shipping_method" value="fake.parcel_terminal" checked="checked"/>
-            {% else %}
-              <input id="omniva_terminal" type="radio" name="shipping_method" value="fake.parcel_terminal"/>
-            {% endif %}
-            {{ found.head }} - {{ found.text }}
-          </label>
-        </div>
-      {% endif %}
-    {# Non Omniva shipping methods #}
-    {% for quote in shipping_method.quote if not (quote.code starts with 'omnivalt') %}
-    <div class="radio">
-      <label> {% if quote.code == code or not code %}
-        {% set code = quote.code %}
-        <input type="radio" name="shipping_method" value="{{ quote.code }}" checked="checked" />
-        {% else %}
-        <input type="radio" name="shipping_method" value="{{ quote.code }}" />
-        {% endif %}
-        {{ quote.title }} - {{ quote.text }}</label>
-    </div>
-    {% endfor %}
+{% for quote in shipping_method.quote if not (quote.code starts with 'omnivalt.parcel') %}
+<div class="radio">
+  <label> {% if quote.code == code or not code %}
+    {% set code = quote.code %}
+    <input type="radio" name="shipping_method" value="{{ quote.code }}" checked="checked" />
     {% else %}
-    <div class="alert alert-danger alert-dismissible">{{ shipping_method.error }}</div>
+    <input type="radio" name="shipping_method" value="{{ quote.code }}" />
     {% endif %}
-  {% endfor %}
+    {{ quote.title }} - {{ quote.text }}</label>
+</div>
+{% endfor %}
+{% else %}
+<div class="alert alert-danger alert-dismissible">{{ shipping_method.error }}</div>
+{% endif %}
+{% endfor %}
 {% endif %}
 <p><strong>{{ text_comments }}</strong></p>
 <p>

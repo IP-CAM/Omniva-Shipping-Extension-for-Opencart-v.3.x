@@ -7,28 +7,6 @@ class ControllerExtensionModuleOmnivaltDefault extends Controller
    * 
    */
 
-  // targetting checkout save function, after shipping coutry is changed updates omniva terminal list in session
-  // fixes issue where checkout expects to find terminal thats not loaded into session.
-  // preferably we should keep only one country worth of terminals inside session at all times.
-  public function fixSession($route, $data)
-  {
-    if (isset($this->request->post['shipping_country_id'])) {
-      $country_id = intval($this->request->post['shipping_country_id']);
-      $omniva_loaded_country = '';
-      if (isset($this->session->data['omniva_country_loaded']))
-        $omniva_loaded_country = $this->session->data['omniva_country_loaded'];
-      if ($omniva_loaded_country != $country_id) {
-        // get country information
-        $this->load->model('localisation/country');
-        $country_info = $this->model_localisation_country->getCountry($country_id);
-        // update terminal selection in session
-        $this->load->model('extension/shipping/omnivalt');
-        $quote = $this->model_extension_shipping_omnivalt->getQuote($country_info);
-        $this->session->data['shipping_methods']['omnivalt'] = $quote;
-      }
-    }
-  }
-
   public function changeTemplate(&$route, &$data)
   {
     $route = str_replace(
@@ -50,7 +28,8 @@ class ControllerExtensionModuleOmnivaltDefault extends Controller
       'place_not_found' => $this->language->get('text_omniva_not_found'),
       'show_on_map' => $this->language->get('text_omniva_show_map'),
       'show_more' => $this->language->get('text_omniva_show_more'),
-      'search_back_to_list' => $this->language->get('text_omniva_back_to_list')
+      'search_back_to_list' => $this->language->get('text_omniva_back_to_list'),
+      'terminal_not_selected' => $this->language->get('text_omniva_no_terminal'),
     ];
 
     // some checkouts messes up selected shipping method
@@ -60,7 +39,10 @@ class ControllerExtensionModuleOmnivaltDefault extends Controller
     }
 
     // get shipping methods country
-    $data['omniva_country'] = $this->session->data['shipping_address']['iso_code_2'];
+    if (isset($this->session->data['shipping_address']['iso_code_2']))
+      $data['omniva_country'] = $this->session->data['shipping_address']['iso_code_2'];
+    else
+      $data['omniva_country'] = 'LT';
 
     // load terminal array
     $this->load->model('extension/shipping/omnivalt');
