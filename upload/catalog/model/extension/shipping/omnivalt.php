@@ -85,6 +85,17 @@ class ModelExtensionShippingOmnivalt extends Model
                 'text' => $text,
               );
             }
+
+            // add fake quote
+            $quote_data[$service_Active] = array(
+              'code' => 'fake.' . $service_Active,
+              'title' => $title,
+              'head' => $title,
+              'cost' => $cost,
+              'tax_class_id' => $tax_class_id,
+              'sort_order' => $sort_order,
+              'text' => $text,
+            );
             break;
 
           case 'courier':
@@ -150,9 +161,11 @@ class ModelExtensionShippingOmnivalt extends Model
 
     $parcel_terminals = [];
     if (is_array($terminals)) {
+      $count = 0;
       foreach ($terminals as $terminal) {
-        if (isset($terminal[5]) && $terminal[5] == $country) {
+        if (isset($terminal[5]) && $terminal[5] == $country && $count < 500) {
           $parcel_terminals[(string) $terminal[3]] = $terminal[0] . ', ' . $terminal[2];
+          ++$count;
         }
       }
     }

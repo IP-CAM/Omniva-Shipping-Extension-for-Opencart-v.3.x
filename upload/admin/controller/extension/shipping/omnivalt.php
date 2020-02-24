@@ -10,7 +10,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
 {
   private $error = array();
   private $defaulCodename = 'Omnivalt Mod Default';
-  private $version = '1.0.4';
+  private $version = '1.0.5';
 
   public function install()
   {
@@ -61,12 +61,6 @@ class ControllerExtensionShippingOmnivalt extends Controller
       'extension/shipping/omnivalt/events/orderInfo'
     );
     // Front Events
-    // fix tracking omniva terminals loaded into session
-    $this->model_setting_event->addEvent(
-      $this->defaulCodename,
-      'catalog/controller/checkout/checkout/save/before',
-      'extension/module/omnivalt/default/fixSession'
-    );
 
     // load omniva data into view $data array
     $this->model_setting_event->addEvent(
