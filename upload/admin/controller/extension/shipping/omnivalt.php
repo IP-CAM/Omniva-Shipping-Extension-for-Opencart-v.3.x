@@ -10,7 +10,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
 {
   private $error = array();
   private $defaulCodename = 'Omnivalt Mod Default';
-  private $version = '1.0.5';
+  private $version = '1.0.6';
 
   public function install()
   {
