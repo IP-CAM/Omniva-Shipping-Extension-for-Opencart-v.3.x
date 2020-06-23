@@ -303,7 +303,9 @@ class ControllerExtensionShippingOmnivalt extends Controller
   {
     $this->removeModificationXML($destination_file);
 
-    copy($src_file, $destination_file);
+    if(!copy($src_file, $destination_file)) {
+      file_put_contents(DIR_LOGS . 'omniva.log', date('Y-m-d H:i:s') . ' - Failed to copy modification file. Check error.log');
+    }
   }
 
   protected function removeXMLFromDB()
