@@ -359,7 +359,7 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 			$this->load->model('setting/setting');
 			$this->load->model('sale/order');
 			require_once DIR_SYSTEM . 'library/omnivalt_lib/tcpdf/tcpdf.php';
-			require_once DIR_SYSTEM . 'library/omnivalt_lib/fpdi/autoload.php';
+			require_once DIR_SYSTEM . 'library/omnivalt_lib/fpdi/src/autoload.php';
 			$errors = array();
 			$object = '';
 			$pages = 0;
