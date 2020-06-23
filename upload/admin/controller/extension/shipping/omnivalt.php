@@ -3,14 +3,14 @@
 /**
  * Omnivalt shipping extension general controller
  * for settings enable/disable/install module
- * @version 2.0.0
+ * @version 1.1.0
  * @author mijora.lt
  */
 class ControllerExtensionShippingOmnivalt extends Controller
 {
   private $error = array();
-  private $defaulCodename = 'Omnivalt Mod Default';
-  private $version = '1.0.6';
+  private $defaulCodename = 'Omnivalt Mod Default'; // used in older versions with opencart events
+  private $version = '1.1.0';
 
   public function install()
   {
@@ -36,47 +36,12 @@ class ControllerExtensionShippingOmnivalt extends Controller
       ";
     $this->db->query($sql2);
 
-    // Set generated manifest counter(?)
+    // Set generated manifest counter
     $this->load->model('setting/setting');
     $this->model_setting_setting->editSetting('omniva', array('omniva_manifest' => 0));
 
-    // Prepare for hooking into event system
-    $this->load->model('setting/event');
-    $this->model_setting_event->deleteEventByCode($this->defaulCodename);
-
-    // Admin Events
-    $this->model_setting_event->addEvent(
-      $this->defaulCodename,
-      'admin/view/common/column_left/before',
-      'extension/shipping/omnivalt/events/menu'
-    );
-    $this->model_setting_event->addEvent(
-      $this->defaulCodename,
-      'admin/view/sale/order_list/before',
-      'extension/shipping/omnivalt/events/orderList'
-    );
-    $this->model_setting_event->addEvent(
-      $this->defaulCodename,
-      'admin/view/sale/order_info/before',
-      'extension/shipping/omnivalt/events/orderInfo'
-    );
-    // Front Events
-
-    // load omniva data into view $data array
-    $this->model_setting_event->addEvent(
-      $this->defaulCodename,
-      'catalog/view/checkout/shipping_method/before',
-      'extension/module/omnivalt/default/shippingMethodsView'
-    );
-    // use our modified template
-    $this->model_setting_event->addEvent(
-      $this->defaulCodename,
-      'catalog/view/checkout/shipping_method/before',
-      'extension/module/omnivalt/default/changeTemplate'
-    );
-
-    // Install modificationif needed
-    $this->installModification();
+    // Install modification file
+    $this->updateXMLFile();
   }
 
   public function uninstall()
@@ -90,18 +55,14 @@ class ControllerExtensionShippingOmnivalt extends Controller
       ";
     $this->db->query($sql);
 
-    // Remove order_omniva table (all unsaved information will be lost)
+    // Remove order_omniva table (all not exported information will be lost)
     $sql2 = "DROP TABLE `" . DB_PREFIX . "order_omniva`";
     $this->db->query($sql2);
 
-    // Remove modification from database
-    $data = $this->loadModificationXML();
-    $existing = $this->getModificationByCode($data['code']);
-    if ($existing) {
-      $this->removeModification($existing['modification_id']);
-    }
+    // Remove modification file
+    $this->removeModificationXML(DIR_SYSTEM . 'omnivalt_base.ocmod.xml');
 
-    // Remove event hooks
+    // Remove event hooks (in case module is uninstalled after update but before opening its settings)
     $this->load->model('setting/event');
     $this->model_setting_event->deleteEventByCode($this->defaulCodename);
   }
@@ -113,21 +74,31 @@ class ControllerExtensionShippingOmnivalt extends Controller
     $this->load->model('setting/setting');
     $this->load->language('extension/shipping/omnivalt');
     $this->document->setTitle($this->language->get('heading_title'));
+    $data = array();
 
-    // TODO: Enabling countries
-    /* $data['countries'] = array();
-    $data['countries'][] = array('code' => 'LT', 'text' => 'Lithuania');
-    $data['countries'][] = array('code' => 'LV', 'text' => 'Latvia');
-    $data['countries'][] = array('code' => 'EE', 'text' => 'Estonia'); */
+    // remove old events
+    $data['old_events_removed_msg'] = $this->removeOldEvents() ? $this->language->get('old_events_removed_msg') : false;
+
+    if (isset($this->request->get['fixdb']) && $this->validate()) {
+      $this->fixDBTables();
+      $this->response->redirect($this->url->link('extension/shipping/omnivalt', 'user_token=' . $this->session->data['user_token'], true));
+    }
+
+    if (isset($this->request->get['fixxml']) && $this->validate()) {
+      $this->removeXMLFromDB();
+      $this->updateXMLFile();
+      $this->session->data['success'] = $this->language->get('xml_updated');
+      $this->response->redirect($this->url->link('marketplace/modification', 'user_token=' . $this->session->data['user_token'], true));
+    }
 
     // Saving and validation
     if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate() && $this->validateSettings()) {
       $this->model_setting_setting->editSetting('shipping_omnivalt', $this->request->post);
+      $this->session->data['success'] = $this->language->get('settings_saved');
       if (empty($this->request->post['download'])) {
         if (!empty($this->request->post['save_exit'])) {
           $this->response->redirect($this->url->link('marketplace/extension', 'type=shipping&user_token=' . $this->session->data['user_token'], 'SSL'));
         }
-        $this->session->data['omnivalt_saved'] = true;
         $this->response->redirect($this->url->link('extension/shipping/omnivalt', '&user_token=' . $this->session->data['user_token'], 'SSL'));
       }
       $data['terminal_update'] = $this->fetchUpdates();
@@ -152,10 +123,10 @@ class ControllerExtensionShippingOmnivalt extends Controller
     $data['cancel'] = $this->url->link('marketplace/extension', 'type=shipping&user_token=' . $this->session->data['user_token'], 'SSL');
     // End of Header data
 
-    $data['settings_saved'] = false;
-    if (isset($this->session->data['omnivalt_saved'])) {
-      $data['settings_saved'] = $this->language->get('settings_saved');
-      unset($this->session->data['omnivalt_saved']);
+    $data['success'] = false;
+    if (isset($this->session->data['success'])) {
+      $data['success'] = $this->session->data['success'];
+      unset($this->session->data['success']);
     }
 
     // Load translation strings
@@ -166,7 +137,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
       'entry_courier_price', 'entry_terminals', 'button_save', 'button_save_exit', 'button_cancel', 'button_download', 'entry_sender_name',
       'entry_sender_address', 'entry_sender_city', 'entry_sender_postcode', 'entry_sender_phone', 'entry_sender_country_code', 'button_update_terminals',
       'button_save_exit', 'webservice_header', 'sender_header', 'services_header', 'prices_header', 'cod_header', 'pickup_header', 'terminals_header',
-      'option_lt', 'option_lv', 'option_ee', 'entry_tax_class'
+      'option_lt', 'option_lv', 'option_ee', 'entry_tax_class', 'db_fix_notify', 'button_fix_db', 'xml_fix_notify', 'button_fix_xml'
     ) as $key) {
       $data[$key] = $this->language->get($key);
     }
@@ -261,12 +232,22 @@ class ControllerExtensionShippingOmnivalt extends Controller
     }
 
     $data['shipping_omnivalt_terminals'] = $this->loadTerminals();
+    if (!$data['shipping_omnivalt_terminals']) {
+      $data['shipping_omnivalt_terminals'] = array();
+    }
     $data['terminal_count'] = $this->language->get('terminal_count');
     if (isset($data['shipping_omnivalt_terminals'])) {
       $data['terminal_count'] = count($data['shipping_omnivalt_terminals']);
     }
 
     $data['cron_link'] = HTTPS_CATALOG . 'index.php?route=extension/module/omnivalt/update_terminals';
+
+    // DB check
+    $data['db_check'] = $this->checkDBTables();
+    $data['db_fix_url'] = $this->url->link('extension/shipping/omnivalt', 'user_token=' . $this->session->data['user_token'] . '&fixdb', true);
+    // XML check
+    $data['xml_check'] = $this->checkModificationVersion();
+    $data['xml_fix_url'] = $this->url->link('extension/shipping/omnivalt', 'user_token=' . $this->session->data['user_token'] . '&fixxml', true);
 
     // Get all tax classes information
     $this->load->model('localisation/tax_class');
@@ -285,6 +266,106 @@ class ControllerExtensionShippingOmnivalt extends Controller
       return false;
     }
     return (int) $this->request->post['shipping_omnivalt_status'];
+  }
+
+  protected function checkModificationVersion()
+  {
+    $source_xml = DIR_SYSTEM . 'library/omnivalt_lib/omnivalt_base.ocmod.xml';
+    $xml = DIR_SYSTEM . 'omnivalt_base.ocmod.xml';
+
+    return version_compare($this->getModXMLVersion($source_xml), $this->getModXMLVersion($xml), '>');
+  }
+
+  protected function getModXMLVersion($file)
+  {
+    if (!is_file($file)) {
+      return null;
+    }
+    $xml = file_get_contents($file);
+
+    $dom = new DOMDocument('1.0', 'UTF-8');
+    $dom->loadXml($xml);
+
+    $version = $dom->getElementsByTagName('version')->item(0)->nodeValue;
+
+    return $version;
+  }
+
+  protected function updateXMLFile()
+  {
+    $this->copyModificationXML(
+      DIR_SYSTEM . 'library/omnivalt_lib/omnivalt_base.ocmod.xml',
+      DIR_SYSTEM . 'omnivalt_base.ocmod.xml'
+    );
+  }
+
+  protected function copyModificationXML($src_file, $destination_file)
+  {
+    $this->removeModificationXML($destination_file);
+
+    copy($src_file, $destination_file);
+  }
+
+  protected function removeXMLFromDB()
+  {
+    $query = $this->db->query("SELECT modification_id FROM `" . DB_PREFIX . "modification` WHERE code = 'omnivaltshipping'");
+    if ($result = $query->row) {
+      $this->db->query("DELETE FROM `" . DB_PREFIX . "modification` WHERE modification_id = " . $result['modification_id']);
+    }
+  }
+
+  protected function removeModificationXML($target_file = false)
+  {
+    if (is_file($target_file)) {
+      unlink($target_file);
+    }
+  }
+
+  protected function checkDBTables()
+  {
+    $result = array();
+    if (version_compare(VERSION, '3.0.0', '>=')) {
+      $session_table = $this->db->query("DESCRIBE `" . DB_PREFIX . "session`")->rows;
+      foreach ($session_table as $col) {
+        if (strtolower($col['Field']) != 'data') {
+          continue;
+        }
+        if (strtolower($col['Type']) == 'text') {
+          // needs to be MEDIUMTEXT or LONGTEXT
+          $result['session'] = array(
+            'field' => $col['Field'],
+            'fix' => 'MEDIUMTEXT'
+          );
+        }
+        break;
+      }
+    }
+
+    return $result;
+  }
+
+  protected function fixDBTables()
+  {
+    $db_check = $this->checkDBTables();
+    if (!$db_check) {
+      return; // nothing to fix
+    }
+
+    foreach ($db_check as $table => $data) {
+      $this->db->query("ALTER TABLE `" . DB_PREFIX . $table . "` MODIFY `" . $data['field'] . "` " . $data['fix'] . ";");
+    }
+  }
+
+  // removes old events, as those were moved back into ocmod.xml file
+  protected function removeOldEvents()
+  {
+    if (!$this->config->get('omnivalt_events_removed')) {
+      $this->load->model('setting/event');
+      $this->model_setting_event->deleteEventByCode($this->defaulCodename);
+      $this->model_setting_setting->editSetting('omnivalt_events', array('omnivalt_events_removed' => 1));
+      return true;
+    }
+    return false;
   }
 
   protected function validateSettings()
@@ -332,7 +413,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
 
   private function loadTerminals()
   {
-    $terminals_json_file_dir = DIR_DOWNLOAD."omniva_terminals.json";
+    $terminals_json_file_dir = DIR_DOWNLOAD . "omniva_terminals.json";
     if (!file_exists($terminals_json_file_dir))
       return false;
     $terminals_file = fopen($terminals_json_file_dir, "r");
@@ -351,7 +432,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
       return ['failed' => $csv['failed']];
     }
     if (empty($csv)) {
-      return ['failed' => 'Requested terminal list was empty, aborting terminal list update']; // TODO: translate
+      return ['failed' => 'Requested terminal list was empty, aborting terminal list update'];
     }
     $countries = array();
     $countries['LT'] = 1;
@@ -362,19 +443,19 @@ class ControllerExtensionShippingOmnivalt extends Controller
       return ['failed' => $terminals['failed']];
     }
     $terminals = $terminals ? $terminals : array();
-    $fp = fopen(DIR_DOWNLOAD."omniva_terminals.json", "w");
+    $fp = fopen(DIR_DOWNLOAD . "omniva_terminals.json", "w");
     fwrite($fp, json_encode($terminals));
     fclose($fp);
 
     $this->csvTerminal();
-    return ['success' => 'Terminals updated']; // TODO: translate
+    return ['success' => 'Terminals updated'];
   }
 
   private function fetchURL($url)
   {
     $ch = curl_init(trim($url));
     if (!$ch) {
-      return ['failed' => 'Cant create curl']; // TODO: translate
+      return ['failed' => 'Cant create curl'];
     }
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
@@ -387,7 +468,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
       return ['failed' => curl_error($ch)];
     }
     if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
-      return ['failed' => 'Cannot fetch update from ' . curl_getinfo($ch, CURLINFO_EFFECTIVE_URL) . ': ' . curl_getinfo($ch, CURLINFO_HTTP_CODE)]; // TODO: translate
+      return ['failed' => 'Cannot fetch update from ' . curl_getinfo($ch, CURLINFO_EFFECTIVE_URL) . ': ' . curl_getinfo($ch, CURLINFO_HTTP_CODE)];
     }
 
     curl_close($ch);
@@ -423,7 +504,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
     }
     $rows = str_getcsv($csv, "\n"); #parse the rows, remove first
     if (strpos($rows[0], 'ZIP;') === false) {
-      return ['failed' => 'Terminal CSV file is in wrong format']; // TODO: need translation
+      return ['failed' => 'Terminal CSV file is in wrong format'];
     }
     $newformat = count(str_getcsv($rows[0], ';')) > 10 ? 1 : 0;
     array_shift($rows);
@@ -437,7 +518,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
         if (empty($countries[strtoupper(trim($cabin[3]))])) {
           continue;
         }
-        # closed ? exists on EE only
+        // skip post offices (TYPE=1)
         if (intval($cabin[2])) {
           continue;
         }
@@ -448,84 +529,5 @@ class ControllerExtensionShippingOmnivalt extends Controller
       }
     }
     return $cabins;
-  }
-
-  protected function addModification($data)
-  {
-    $this->db->query(
-      "
-      INSERT INTO `" . DB_PREFIX . "modification` 
-      SET code = '" . $this->db->escape($data['code']) . "', name = '" . $this->db->escape($data['name']) . "', 
-      author = '" . $this->db->escape($data['author']) . "', version = '" . $this->db->escape($data['version']) . "', 
-      link = '" . $this->db->escape($data['link']) . "', xml = '" . $this->db->escape($data['xml']) . "', 
-      status = '" . (int) $data['status'] . "', date_added = NOW()
-      "
-    );
-  }
-
-  protected function updateModification($data)
-  {
-    $this->db->query(
-      "
-      UPDATE `" . DB_PREFIX . "modification` 
-      SET code = '" . $this->db->escape($data['code']) . "', name = '" . $this->db->escape($data['name']) . "', 
-      author = '" . $this->db->escape($data['author']) . "', version = '" . $this->db->escape($data['version']) . "', 
-      link = '" . $this->db->escape($data['link']) . "', xml = '" . $this->db->escape($data['xml']) . "', 
-      status = '" . (int) $data['status'] . "', date_added = NOW() 
-      WHERE modification_id = " . $data['modification_id']
-    );
-  }
-
-  protected function removeModification($id)
-  {
-    $this->db->query(
-      "
-      REMOVE FROM `" . DB_PREFIX . "modification` 
-      WHERE modification_id = " . $id
-    );
-  }
-
-  protected function loadModificationXML()
-  {
-    $file =  DIR_SYSTEM . 'library/omnivalt_lib/base_install.xml';
-    $xml = file_get_contents($file);
-
-    $dom = new DOMDocument('1.0', 'UTF-8');
-    $dom->loadXml($xml);
-
-    $code = $dom->getElementsByTagName('code')->item(0)->nodeValue;
-    $name = $dom->getElementsByTagName('name')->item(0)->nodeValue;
-    $version = $dom->getElementsByTagName('version')->item(0)->nodeValue;
-    $author = $dom->getElementsByTagName('author')->item(0)->nodeValue;
-    $link = $dom->getElementsByTagName('link')->item(0)->nodeValue;
-    $status = '1';
-
-    return compact('code', 'name', 'version', 'author', 'link', 'status', 'xml');
-  }
-
-  // Install modification xml if this was uploaded instead of installed using module manager
-  public function installModification()
-  {
-    $data = $this->loadModificationXML();
-    $existing = $this->getModificationByCode($data['code']);
-    if ($existing) {
-      if (version_compare($existing["version"], $data['version'], ">=")) {
-        return false; // no need to update databse
-      }
-      // we are installing newer version
-      $data['modification_id'] = $existing['modification_id'];
-      $this->updateModification($data);
-      return true;
-    }
-    // doesnt have our modification
-    $this->addModification($data);
-    return true;
-  }
-
-  protected function getModificationByCode($code)
-  {
-    $query = $this->db->query("SELECT * FROM `" . DB_PREFIX . "modification` WHERE code = '" . $this->db->escape($code) . "'");
-
-    return $query->row;
   }
 }

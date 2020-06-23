@@ -93,7 +93,7 @@ $_['text_eshop_settings_p']     = 'can be changed in the Omnivalt module setting
 $_['text_omniva_data_send']     = 'Sending data';
 $_['text_omniva_not_found']     = 'Nothing found.';
 
-// Settings Added in v2.0.0
+// Settings Added in v1.0.6
 $_['errors_found']      = "Not saved. Please fix marked fields.";
 $_['settings_saved']    = 'Omnivalt settings updated.';
 $_['button_save_exit']  = "Save and close";
@@ -111,3 +111,14 @@ $_['terminal_count']    = "Save settings and press 'Update parcel terminals' but
 $_['call_courier']      = "Call Omniva courier";
 
 $_['entry_tax_class']   = "Tax class";
+
+// Settings added in v1.1.0
+// DB fix notification
+$_['db_fix_notify'] = 'For parcel list to fit in session table its data field must be of type MEDIUMTEXT';
+$_['button_fix_db'] = 'Fix it';
+// XML fix notification
+$_['xml_fix_notify'] = 'Newer version of modification file found for system/omnivalt_base.ocmod.xml';
+$_['button_fix_xml'] = 'Update modification';
+$_['xml_updated']   = 'system/omnivalt_base.ocmod.xml updated. Please refresh modifications now.';
+
+$_['old_events_removed_msg'] = 'Old events succesfully removed';

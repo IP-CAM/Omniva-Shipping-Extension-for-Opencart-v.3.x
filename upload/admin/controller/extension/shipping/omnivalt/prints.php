@@ -239,6 +239,9 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 		if (isset($_POST['selected']) && count($_POST['selected'])) {
 			global $cookie;
 			require_once DIR_SYSTEM . 'library/omnivalt_lib/tcpdf/tcpdf.php';
+			require_once DIR_APPLICATION . 'controller/extension/shipping/omnivalt/api.php';
+			$this->omnivaltAPI = new ControllerExtensionShippingOmnivaltApi($this->registry);
+
 			$this->load->model('setting/setting');
 			$this->load->model('sale/order');
 			$this->load->model('catalog/product');
@@ -285,7 +288,7 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 
 				for ($i = 0; $i < $rows; $i++) {
 					if ($track_numer[$i] == '') {
-						$status = $this->get_tracking_number($order);
+						$status = $this->omnivaltAPI->get_tracking_number($order);
 						if (!$status['status']) {
 							continue;
 						}
@@ -341,7 +344,6 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 	public function labels2($variable = false)
 	{
 		$this->labels($variable);
-		//$this->labels(true);
 	}
 
 	public function labels($generate = false)
@@ -349,7 +351,6 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 		if (isset($_GET['order_id'])) {
 			$_POST['selected'] = array($_GET['order_id']);
 		}
-		//var_dump($_POST['selected']); die;
 		require_once DIR_APPLICATION . 'controller/extension/shipping/omnivalt/api.php';
 		$this->omnivaltAPI = new ControllerExtensionShippingOmnivaltApi($this->registry);
 
@@ -362,7 +363,7 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 			$errors = array();
 			$object = '';
 			$pages = 0;
-			$pdf = new \setasign\Fpdi\TcpdfFpdi('P');
+			$pdf = new \setasign\Fpdi\Tcpdf\Fpdi('P');
 			$pdf->setPrintHeader(false);
 			$pdf->setPrintFooter(false);
 

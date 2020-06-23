@@ -4,7 +4,7 @@
 
 For best usage, make sure Opencart shop is configured.
 
-To install:
+### New install
 1. Extensions -> Installer Upload omniva-opencart-3.0.ocmod.zip (Recommended)<br/>
   **or**<br/>
   using FTP upload all files from upload folder to root folder of opencart.
@@ -19,3 +19,11 @@ To install:
 5. Edit module settings<br/>
   Extensions -> Omnivalt -> Settings<br/>
   Press Save, then 'Update parcel' terminals button to update Omniva terminal list - this might take couple seconds to complete, refresh settings page and check Terminal count at the bottom to see if list was downloaded.
+
+### Module update
+1. Upload files from new module version using FTP (if currently used version was customized, make sure to have old module backed up and port customizations afterwards into new module version if needed).
+2. Edit access permissions (in case there is new module files):<br/>
+System -> Users -> User Groups edit user group (like Administrator), Select All for both Access and Modify, Save.
+3. Go to module settings:<br/>
+this will check for changes and updates needed in database and/or modification XML. Modification file omnivalt_base.ocmod.xml is located in opencart system folder (since module version 1.1.0) for ease of access.
+4. Fill/Edit module settings as needed.
