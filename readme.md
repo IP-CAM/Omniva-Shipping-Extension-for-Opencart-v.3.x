@@ -4,6 +4,10 @@
 
 For best usage, make sure Opencart shop is configured.
 
+### Requirements
+- Opencart 3.0
+- PHP must have permision to write to opencart system folder (module copies omnivalt_base.ocmod.xml file from omnivalt_lib folder to opencart system folder)
+
 ### New install
 1. Extensions -> Installer Upload omniva-opencart-3.0.ocmod.zip (Recommended)<br/>
   **or**<br/>
