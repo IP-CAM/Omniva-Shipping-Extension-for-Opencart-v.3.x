@@ -11,18 +11,19 @@ class ModelExtensionShippingOmnivalt extends Model
   public function getQuote($address)
   {
     $currency_carrier = "EUR";
-    $total_kg = $this->cart->getWeight();
-    $weight_class_id = $this->config->get('config_weight_class_id');
-    $unit = $this->db->query("SELECT unit FROM `" . DB_PREFIX . "weight_class_description` wcd WHERE (weight_class_id = " . $weight_class_id . ") AND language_id = '" . (int) $this->config->get('config_language_id') . "'");
-    $unit = $unit->row['unit'];
-    if ($unit == 'g') {
-      $total_kg /= 1000;
-    }
-    //echo $total_kg; die;
+    $cart_subtotal = $this->cart->getSubTotal();
+    // weight is no longer used
+    // $total_kg = $this->cart->getWeight();
+    // $weight_class_id = $this->config->get('config_weight_class_id');
+    // $unit = $this->db->query("SELECT unit FROM `" . DB_PREFIX . "weight_class_description` wcd WHERE (weight_class_id = " . $weight_class_id . ") AND language_id = '" . (int) $this->config->get('config_language_id') . "'");
+    // $unit = $unit->row['unit'];
+    // if ($unit == 'g') {
+    //   $total_kg /= 1000;
+    // }
+
     $this->load->language('extension/shipping/omnivalt');
 
     $method_data = array();
-    //if ($total_kg > 9) return $method_data;
     $service_Actives = $this->config->get('shipping_omnivalt_service');
 
     if (is_array($service_Actives) && count($service_Actives) && ($address['iso_code_2'] == 'LT' ||
@@ -35,20 +36,20 @@ class ModelExtensionShippingOmnivalt extends Model
         }
         $price = $this->config->get($price_target);
 
-        if (stripos($price, ':') !== false) { // ??? OBSOLETE CODE ???
-          $prices = explode(',', $price);
+        // in price settings ranges can be done using format - cart_subtotal1:price1 ; cart_subtotal2:price2
+        if (stripos($price, ':') !== false) {
+          $prices = explode(';', $price);
           if (!is_array($prices)) {
             continue;
           }
           $price = false;
-          foreach ($prices as $price) {
-            $priceArr = explode(':', str_ireplace(array(' ', ','), '', $price));
+          foreach ($prices as $range) {
+            $priceArr = explode(':', str_ireplace(array(' ', ';'), '', $range));
             if (!is_array($priceArr) || count($priceArr) != 2) {
               continue;
             }
-            if ($priceArr[0] >= $total_kg) {
+            if ($priceArr[0] <= $cart_subtotal) {
               $price = $priceArr[1];
-              break;
             }
           }
         }
@@ -137,7 +138,7 @@ class ModelExtensionShippingOmnivalt extends Model
 
   private function loadTerminals()
   {
-    $terminals_json_file_dir = DIR_DOWNLOAD."omniva_terminals.json";
+    $terminals_json_file_dir = DIR_DOWNLOAD . "omniva_terminals.json";
     if (!file_exists($terminals_json_file_dir))
       return false;
     $terminals_file = fopen($terminals_json_file_dir, "r");

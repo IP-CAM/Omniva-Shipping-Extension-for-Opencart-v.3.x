@@ -25,10 +25,30 @@
     </div>
   </div>
   <div class="container-fluid">
-    {% if settings_saved %}
+    <!-- DB CHECK -->
+    {% if db_check %}
+      <div class="alert alert-warning"><i class="fa fa-exclamation-circle"></i> {{ db_fix_notify }} 
+        <a href="{{ db_fix_url }}" class="btn btn-success">{{ button_fix_db }}</a>
+      </div>
+    {% endif %}
+    <!-- XML CHECK -->
+    {% if xml_check %}
+      <div class="alert alert-warning"><i class="fa fa-exclamation-circle"></i> {{ xml_fix_notify }} 
+        <a href="{{ xml_fix_url }}" class="btn btn-success">{{ button_fix_xml }}</a>
+      </div>
+    {% endif %}
+    <!-- OLD EVENTS REMOVAL -->
+    {% if old_events_removed_msg %}
       <div class="alert alert-success">
         <i class="fa fa-exclamation-circle"></i>
-        {{ settings_saved }}
+        {{ old_events_removed_msg }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+      </div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success">
+        <i class="fa fa-exclamation-circle"></i>
+        {{ success }}
         <button type="button" class="close" data-dismiss="alert">&times;</button>
       </div>
     {% endif %}

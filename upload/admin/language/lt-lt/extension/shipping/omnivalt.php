@@ -94,7 +94,7 @@ $_['text_eshop_settings_p']     ='galima keisti Omnivalt modulio nustatymuose.';
 $_['text_omniva_data_send']     = 'Siunčiami duomenys';
 $_['text_omniva_not_found']     = 'Pagal pateiktus duomenis nieko nera.';
 
-// Settings Added in v2.0.0
+// Settings Added in v1.0.6
 $_['errors_found']      = "Neišsaugota. Prašome pataisyti pažymėtus laukus.";
 $_['settings_saved']    = 'Omnivalt nustatymai išsaugoti.';
 $_['button_save_exit']  = "Saugoti ir uždaryti";
@@ -112,3 +112,14 @@ $_['terminal_count']    = "Terminalų sąrašo nėra. Išsaugokite nustatymus ir
 $_['call_courier']      = "Kviesti Omniva kurjerį";
 
 $_['entry_tax_class']   = "Mokesčių klasė";
+
+// Settings added in v1.1.0
+// DB fix notification
+$_['db_fix_notify'] = 'Session letelės data lauko tipas privalo būti MEDIUMTEXT.';
+$_['button_fix_db'] = 'Pataisyti';
+// XML fix notification
+$_['xml_fix_notify'] = 'Rasta naujesnė modifikacijos failo system/omnivalt_base.ocmod.xml versija';
+$_['button_fix_xml'] = 'Atnaujinti modifikaciją';
+$_['xml_updated']   = 'system/omnivalt_base.ocmod.xml atnaujinta. Prašome atnaujinti modifikacijas (Refersh mygtukas).';
+
+$_['old_events_removed_msg'] = 'Seni Events sėkmingai pašalinti';

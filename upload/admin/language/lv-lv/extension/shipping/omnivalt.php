@@ -93,7 +93,7 @@ $_['text_eshop_settings_p']     = 'var mainīt Omnivalt moduļa iestatījumos.';
 $_['text_omniva_data_send']     = 'Datu sūtīšana';
 $_['text_omniva_not_found']     = 'Nekas nav atrasts';
 
-// Settings Added in v2.0.0
+// Settings Added in v1.0.6
 $_['errors_found']      = "Nav saglabāts. Lūdzu, izlabojiet atzīmētos laukus.";
 $_['settings_saved']    = 'Omnivalt iestatījumi ir atjaunināti.';
 $_['button_save_exit']  = "Saglabājiet un aizveriet";
@@ -111,3 +111,14 @@ $_['terminal_count']    = "Saglabājiet iestatījumus un nospiediet pogu 'Atjaun
 $_['call_courier']      = "Zvaniet Omniva kurjeram";
 
 $_['entry_tax_class']   = "Nodokļu klase";
+
+// Settings added in v1.1.0
+// DB fix notification
+$_['db_fix_notify'] = 'For parcel list to fit in session table its data field must be of type MEDIUMTEXT';
+$_['button_fix_db'] = 'Fix it';
+// XML fix notification
+$_['xml_fix_notify'] = 'Newer version of modification file found for system/omnivalt_base.ocmod.xml';
+$_['button_fix_xml'] = 'Update modification';
+$_['xml_updated']   = 'system/omnivalt_base.ocmod.xml updated. Please refresh modifications now.';
+
+$_['old_events_removed_msg'] = 'Old events succesfully removed';
