@@ -106,7 +106,7 @@ class ModelExtensionShippingOmnivalt extends Model
               'head' => $title,
               'cost' => $this->currency->convert($price, $currency_carrier, $this->config->get('config_currency')),
               'tax_class_id' => $tax_class_id,
-              'sort_order' => $this->config->get('shipping_omnivalt_sort_order'),
+              'sort_order' => $this->config->get('shipping_omnivalt_sort_order') + 1,
               'text' => $this->currency->format(
                 $this->tax->calculate(
                   $this->currency->convert($price, $currency_carrier, $this->session->data['currency']),
@@ -123,6 +123,14 @@ class ModelExtensionShippingOmnivalt extends Model
       if (!(isset($quote_data)) || !is_array($quote_data)) {
         return '';
       }
+
+      $sort_order = array();
+
+      foreach ($quote_data as $key => $value) {
+        $sort_order[$key] = $value['sort_order'];
+      }
+
+      array_multisort($sort_order, SORT_ASC, $quote_data);
 
       $method_data = array(
         'code' => 'omnivalt',
