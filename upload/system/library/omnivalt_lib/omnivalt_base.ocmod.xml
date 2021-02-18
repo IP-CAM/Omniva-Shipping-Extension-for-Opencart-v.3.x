@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <modification>
   <name>Omnivalt Shipping Base Mod</name>
-  <version>1.2.0</version>
+  <version>1.2.1</version>
   <author>Mijora</author>
   <link>https://www.mijora.lt</link>
   <code>omnivaltshipping_base_mod</code>
@@ -156,58 +156,62 @@
       </add>
     </operation>
     <operation error="skip">
-      <search><![CDATA[<h3 class="panel-title"><i class="fa fa-user"></i> {{ text_customer_detail }}</h3>]]></search>
+      <search><![CDATA[<script type="text/javascript">]]></search>
       <add position="before"><![CDATA[
         {% if 'omnivalt' in orderCarrier %}
-        <form method="POST" action="{{ editOmniva }}">
-          <input type="hidden" value="{{ order_id }}" name="order_id">
-          <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ heading_title }}</h3>
+        <div class="container-fluid">
+          <div class="panel panel-default">
+            <form method="POST" action="{{ editOmniva }}">
+              <input type="hidden" value="{{ order_id }}" name="order_id">
+              <div class="panel-heading">
+                <h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ heading_title }}</h3>
+              </div>
+              <div class="panel-body">
+                <table class="table">
+                  <tbody>
+                    <tr>
+                      <td colspan="2">{{ labels_count }}
+                        <select name="labelsCount" id="labelsCount" class="form-control input-sm">
+                          <option value="1" selected="">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                          <option value="4">4</option>
+                          <option value="5">5</option>
+                        </select>
+                      </td>
+                      <td colspan="2">
+                        {{ weight }} <input type="number" step="0.0001" name="omnivaWeight" class="form-control input-sm" value="{{ omnivaWeight }}">
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2">C.O.D
+                        <select name="cod_available" class="form-control input-sm">
+                          <option value="0">Ne</option>
+                          <option value="1" {% if (payment_code=='cod' or cod_amount> 0) and cod_amount != 888888 %} selected="" {% endif %}>Taip</option>
+                        </select>
+                      </td>
+                      <td colspan="2">
+                        {{ text_cod_amount }}
+                        <input type="text" name="cod_value" class="form-control input-sm" value="{% if cod_amount and cod_amount != 888888 %}{{ cod_amount }}{% else %}{{ orderTotal }}{% endif %}">
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="4">{{ delivery_method }}
+                        <select name="delivery_method" class="form-control input-sm">
+                          <option disabled>Select labels count</option>
+                          <option value="omnivalt.courier|OmnivaLt kurjeris">Omnivalt Courier</option>
+                          {{ parcel_terminals }}
+                        </select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <input type="submit" name="update" class="btn btn-default btn-sm" value="{{ renew }}">
+                <input type="submit" name="generateLabel" class="btn btn-default btn-sm" value="{{ generate_label }}">
+              </div>
+            </form>
+          </div>
         </div>
-        <table class="table">
-          <tbody>
-            <tr>
-              <td colspan="2">{{labels_count }}
-                <select name="labelsCount" id="labelsCount" class="form-control input-sm">
-                  <option value="1" selected="">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                </select>
-              </td>
-              <td colspan="2">
-                {{ weight }} <input type="number" step="0.0001" name="omnivaWeight" class="form-control input-sm" value="{{ omnivaWeight }}">
-              </td>
-            </tr>
-            <tr>
-              <td colspan="2">C.O.D 
-                <select name="cod_available" class="form-control input-sm">
-                  <option value="0">Ne</option>
-                  <option value="1" {% if (payment_code == 'cod' or cod_amount > 0) and cod_amount != 888888 %} selected="" {% endif %}>Taip</option>
-                </select>
-              </td>
-              <td colspan="2">
-                {{text_cod_amount }}
-                <input type="text" name="cod_value" class="form-control input-sm" value="{% if cod_amount and cod_amount != 888888 %}{{ cod_amount }}{% else %}{{ orderTotal }}{% endif %}">
-              </td>
-            </tr>
-            <tr>
-              <td colspan="4">{{delivery_method }}
-                <select name="delivery_method" class="form-control input-sm">
-                  <option disabled>Select labels count</option>
-                  <option value="omnivalt.courier|OmnivaLt kurjeris">Omnivalt Courier</option>
-                  {{ parcel_terminals }}
-                </select>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <input type="submit" name="update" class="btn btn-default btn-sm" value="{{renew }}">
-        <input type="submit" name="generateLabel" class="btn btn-default btn-sm" value="{{generate_label }}">
-        </div>
-        </form>
-        <div class="panel panel-default">
-        <div class="panel-heading">
         {% endif %}
         ]]>
       </add>
@@ -251,13 +255,23 @@
       </add>
     </operation>
     <operation error="skip">
-      <search><![CDATA[<td class="text-left">{{ order.customer }}</td>]]></search>
-      <add position="replace"><![CDATA[
-        <td class="text-left">{{ order.customer }}
-          {% if 'omnivalt' in order["shipping_code"] %}
-          <img src="./view/image/omniva-lt.png" alt="Omniva LT" height="20">
-          {% endif %}
-        </td>
+      <search><![CDATA[{{ footer }}]]></search>
+      <add position="before"><![CDATA[
+        <!-- Omniva (check if need to add logo) -->
+        <script type="text/javascript"><!--
+        $(document).ready(function(){
+          $('input[name^=\'shipping_code\'][value^=\'omnivalt\']')
+            .closest('td').next().next()
+            .append($('<img src="view/image/omniva-lt.png" alt="Omniva Logo" class="omniva-order-logo">'))
+        });
+        //--></script>
+        <style>
+        .omniva-order-logo {
+          height: 20px;
+          margin-left: 0.5rem;
+        }
+        </style>
+        <!-- Omniva END -->
         ]]>
       </add>
     </operation>
