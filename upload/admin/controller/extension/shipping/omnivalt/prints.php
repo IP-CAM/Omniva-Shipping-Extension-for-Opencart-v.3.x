@@ -333,7 +333,7 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 			$sign = 'Kurjerio vardas, pavardė, parašas ________________________________________________<br/><br/>';
 			$sign .= 'Siuntėjo vardas, pavardė, parašas ________________________________________________';
 			$pdf->writeHTML($sign, true, false, false, false, '');
-			$pdf->Output('Omnivalt_manifest.pdf', 'I');
+			$pdf->Output('Omnivalt_manifest.pdf', 'D');
 		} else {
 			echo "No orders selected";
 			return 0;
@@ -546,7 +546,7 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 				//ob_end_flush();
 				//ob_flush();
 				//flush();
-				$pdf->Output('Omnivalt_labels.pdf');
+				$pdf->Output('Omnivalt_labels.pdf', 'D');
 			} else {
 				echo implode('<br/>', $errors);
 			}

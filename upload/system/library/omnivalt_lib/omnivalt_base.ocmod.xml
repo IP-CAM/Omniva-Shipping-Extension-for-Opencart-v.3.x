@@ -150,7 +150,7 @@
     <operation error="skip">
       <search><![CDATA[<a href="{{ invoice }}" target="_blank" data-toggle="tooltip" title="{{ button_invoice_print }}" class="btn btn-info"><i class="fa fa-print"></i></a>]]></search>
       <add position="replace"><![CDATA[
-        <a href="{{ omnivalt_label }}" target="_blank" data-toggle="tooltip" title="{{ generate_labels }}" class="btn btn-warning"><i class="fa fa-barcode"></i></a>
+        <a href="{{ omnivalt_label }}" data-toggle="tooltip" title="{{ generate_labels }}" class="btn btn-warning"><i class="fa fa-barcode"></i></a>
         <a href="{{ invoice }}" target="_blank" data-toggle="tooltip" title="{{ button_invoice_print }}" class="btn btn-info"><i class="fa fa-print"></i></a>
         ]]>
       </add>
@@ -222,8 +222,8 @@
     <operation error="skip">
       <search><![CDATA[<button type="button" data-toggle="tooltip" title="{{ button_filter }}"]]></search>
       <add position="before"><![CDATA[
-        <button type="submit" id="button-omnivalt-labels" form="form-order" formaction="{{ omnivalt_label }}" formtarget="_blank" data-toggle="tooltip" title="{{ generate_labels }}" class="btn btn-warning"><i class="fa fa-barcode"></i></button>
-        <button type="submit" id="button-omnivalt-manifests" form="form-order" formaction="{{ omnivalt_manifest }}" formtarget="_blank" data-toggle="tooltip" title="{{ text_manifest }}" class="btn btn-info"><i class="fa fa-file-text"></i></button>
+        <button type="submit" id="button-omnivalt-labels" form="form-order" formaction="{{ omnivalt_label }}" data-toggle="tooltip" title="{{ generate_labels }}" class="btn btn-warning"><i class="fa fa-barcode"></i></button>
+        <button type="submit" id="button-omnivalt-manifests" form="form-order" formaction="{{ omnivalt_manifest }}" data-toggle="tooltip" title="{{ text_manifest }}" class="btn btn-info"><i class="fa fa-file-text"></i></button>
         ]]>
       </add>
     </operation>
