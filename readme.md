@@ -21,8 +21,8 @@ For best usage, make sure Opencart shop is configured.
   Extensions -> Omnivalt -> Settings<br/>
   Press Save, then 'Update parcel' terminals button to update Omniva terminal list - this might take couple seconds to complete, refresh settings page and check Terminal count at the bottom to see if list was downloaded.
 5. Refresh modification cache<br/>
-  Extensions -> Modifications (should see 'Omnivalt Shipping Mod Default' in the list).<br/>
-  Press Refresh button (top right corner).
+  Extensions -> Modifications.<br/>
+  Press Refresh button (top right corner). This will add required changes to template and opencart core files.
 
 ### Module update
 1. Upload files from new module version using FTP (if currently used version was customized, make sure to have old module backed up and port customizations afterwards into new module version if needed).
