@@ -319,7 +319,7 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
               <th width = "60">Data</th>
               <th width = "40" >Kiekis</th>
               <th width = "60">Svoris (kg)</th>
-              <th width = "210">Gavėjo adresas</th>
+			  <th width = "210">Gavėjo adresas</th>
             </tr>
           </thead>
           <tbody>
@@ -353,6 +353,11 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 		}
 		require_once DIR_APPLICATION . 'controller/extension/shipping/omnivalt/api.php';
 		$this->omnivaltAPI = new ControllerExtensionShippingOmnivaltApi($this->registry);
+
+		$label_print_type = (int) $this->config->get('shipping_omnivalt_label_print_type');
+		if (!in_array($label_print_type, [1, 2])) {
+			$label_print_type = 1; // default is A4
+		}
 
 		if (isset($_POST['selected']) && count($_POST['selected'])) {
 			$status_id = $this->readyStatus();
@@ -436,29 +441,49 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 						}
 
 						$pagecount = $pdf->setSourceFile($label_url);
-						$newPG = array(0, 4, 8, 12, 16, 20, 24, 28, 32);
-						if ($this->labelsMix >= 4) {
-							$pdf->AddPage();
-							$page = 1;
-							$templateId = $pdf->importPage($page);
-							$this->labelsMix = 0;
-						}
-						$tplidx = $pdf->ImportPage(1);
-						if ($this->labelsMix == 0) {
-							$pdf->useTemplate($tplidx, 5, 15, 94.5, 108, false);
-						} else if ($this->labelsMix == 1) {
-							$pdf->useTemplate($tplidx, 110, 15, 94.5, 108, false);
-						} else if ($this->labelsMix == 2) {
-							$pdf->useTemplate($tplidx, 5, 140, 94.5, 108, false);
-						} else if ($this->labelsMix == 3) {
 
-							$pdf->useTemplate($tplidx, 110, 140, 94.5, 108, false);
-						} else {
-							echo 'Problems with labels count, please, select one order!!!';
-						}
-						$pages++;
+						switch ($label_print_type) {
+							case 1: // A4
+								$newPG = array(0, 4, 8, 12, 16, 20, 24, 28, 32);
 
-						$this->labelsMix++;
+								if ($this->labelsMix >= 4) {
+									$pdf->AddPage();
+									$page = 1;
+									$templateId = $pdf->importPage($page);
+									$this->labelsMix = 0;
+								}
+								$tplidx = $pdf->ImportPage(1);
+								if ($this->labelsMix == 0) {
+									$pdf->useTemplate($tplidx, 5, 15, 94.5, 108, false);
+								} else if ($this->labelsMix == 1) {
+									$pdf->useTemplate($tplidx, 110, 15, 94.5, 108, false);
+								} else if ($this->labelsMix == 2) {
+									$pdf->useTemplate($tplidx, 5, 140, 94.5, 108, false);
+								} else if ($this->labelsMix == 3) {
+									$pdf->useTemplate($tplidx, 110, 140, 94.5, 108, false);
+								} else {
+									echo 'Problems with labels count, please, select one order!!!';
+								}
+
+								$pages++;
+
+								$this->labelsMix++;
+
+								break;
+
+							case 2: // Original
+								for ($i = 1; $i <= $pagecount; $i++) {
+									$tplidx = $pdf->ImportPage($i);
+									$s = $pdf->getTemplatesize($tplidx);
+									$pdf->AddPage('P', array($s['width'], $s['height']));
+									$pdf->useTemplate($tplidx);
+
+									$pages++;
+								}
+							default:
+								# code...
+								break;
+						}
 					}
 				} else {
 					/**************container for parcel terminals ************* */
@@ -511,29 +536,48 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 						}
 
 						$pagecount = $pdf->setSourceFile($label_url);
-						$newPG = array(0, 4, 8, 12, 16, 20, 24, 28, 32);
-						if ($this->labelsMix >= 4) {
-							$pdf->AddPage();
-							$page = 1;
-							$templateId = $pdf->importPage($page);
-							$this->labelsMix = 0;
+
+						switch ($label_print_type) {
+							case 1: // A4
+								$newPG = array(0, 4, 8, 12, 16, 20, 24, 28, 32);
+								if ($this->labelsMix >= 4) {
+									$pdf->AddPage();
+									$page = 1;
+									$templateId = $pdf->importPage($page);
+									$this->labelsMix = 0;
+								}
+
+								$tplidx = $pdf->ImportPage(1);
+								if ($this->labelsMix == 0) {
+									$pdf->useTemplate($tplidx, 5, 15, 94.5, 108, false);
+								} else if ($this->labelsMix == 1) {
+									$pdf->useTemplate($tplidx, 110, 15, 94.5, 108, false);
+								} else if ($this->labelsMix == 2) {
+									$pdf->useTemplate($tplidx, 5, 140, 94.5, 108, false);
+								} else if ($this->labelsMix == 3) {
+									$pdf->useTemplate($tplidx, 110, 140, 94.5, 108, false);
+								} else {
+									echo 'Problems with labels count, please, select one order!!!';
+								}
+								$pages++;
+								$this->labelsMix++;
+								break;
+							case 2: // original
+								for ($i = 1; $i <= $pagecount; $i++) {
+									$tplidx = $pdf->ImportPage($i);
+									$s = $pdf->getTemplatesize($tplidx);
+									$pdf->AddPage('P', array($s['width'], $s['height']));
+									$pdf->useTemplate($tplidx);
+
+									$pages++;
+								}
+								break;
+
+							default:
+								# code...
+								break;
 						}
 
-						$tplidx = $pdf->ImportPage(1);
-						if ($this->labelsMix == 0) {
-							$pdf->useTemplate($tplidx, 5, 15, 94.5, 108, false);
-						} else if ($this->labelsMix == 1) {
-							$pdf->useTemplate($tplidx, 110, 15, 94.5, 108, false);
-						} else if ($this->labelsMix == 2) {
-							$pdf->useTemplate($tplidx, 5, 140, 94.5, 108, false);
-						} else if ($this->labelsMix == 3) {
-
-							$pdf->useTemplate($tplidx, 110, 140, 94.5, 108, false);
-						} else {
-							echo 'Problems with labels count, please, select one order!!!';
-						}
-						$pages++;
-						$this->labelsMix++;
 						if ($track_numer) {
 							$this->updateOrderStatus($order_id, $status_id, $track_numer);
 							$this->setOmnivaOrder($order_id, $track_numer);
@@ -586,7 +630,7 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 				$sql = "
 					UPDATE `" . DB_PREFIX . "order` 
 					SET labelsCount = $labelsCount , omnivaWeight = $omnivaWeight , shipping_code = '" . $delivery_method . "' ,
-          shipping_method = '" . $delivery_methodName . "', cod_amount = $cod_value
+          				shipping_method = '" . $delivery_methodName . "', cod_amount = $cod_value
 					WHERE order_id= $order_id;
 					";
 
@@ -597,7 +641,7 @@ class ControllerExtensionShippingOmnivaltPrints extends Controller
 				$sql = "
 					UPDATE `" . DB_PREFIX . "order` 
 					SET labelsCount = $labelsCount , omnivaWeight = $omnivaWeight , shipping_code = '" . $delivery_method . "' ,
-          shipping_method = '" . $delivery_methodName . "', cod_amount = 888888
+          				shipping_method = '" . $delivery_methodName . "', cod_amount = 888888
 					WHERE order_id= $order_id;
 					";
 

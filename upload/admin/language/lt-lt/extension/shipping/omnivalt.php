@@ -123,3 +123,8 @@ $_['button_fix_xml'] = 'Atnaujinti modifikaciją';
 $_['xml_updated']   = 'system/omnivalt_base.ocmod.xml atnaujinta. Prašome atnaujinti modifikacijas (Refersh mygtukas).';
 
 $_['old_events_removed_msg'] = 'Seni Events sėkmingai pašalinti';
+
+// Settings added in v1.1.2
+$_['entry_label_print_type'] = 'Spausdinimo tipas';
+$_['option_label_print_type_1'] = 'A4 (4 lipdukai)';
+$_['option_label_print_type_2'] = '1 lipdukas (100mm x 150mm)';
