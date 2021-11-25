@@ -10,7 +10,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
 {
   private $error = array();
   private $defaulCodename = 'Omnivalt Mod Default'; // used in older versions with opencart events
-  private $version = '1.1.1';
+  private $version = '1.1.2';
 
   public function install()
   {
@@ -137,7 +137,8 @@ class ControllerExtensionShippingOmnivalt extends Controller
       'entry_courier_price', 'entry_terminals', 'button_save', 'button_save_exit', 'button_cancel', 'button_download', 'entry_sender_name',
       'entry_sender_address', 'entry_sender_city', 'entry_sender_postcode', 'entry_sender_phone', 'entry_sender_country_code', 'button_update_terminals',
       'button_save_exit', 'webservice_header', 'sender_header', 'services_header', 'prices_header', 'cod_header', 'pickup_header', 'terminals_header',
-      'option_lt', 'option_lv', 'option_ee', 'entry_tax_class', 'db_fix_notify', 'button_fix_db', 'xml_fix_notify', 'button_fix_xml'
+      'option_lt', 'option_lv', 'option_ee', 'entry_tax_class', 'db_fix_notify', 'button_fix_db', 'xml_fix_notify', 'button_fix_xml',
+      'entry_label_print_type', 'option_label_print_type_1', 'option_label_print_type_2'
     ) as $key) {
       $data[$key] = $this->language->get($key);
     }
@@ -180,6 +181,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
       // Omniva WebService credentials
       'url', 'user', 'password',
       'service',
+      'label_print_type',
       // LT price
       'parcel_terminal_price', 'courier_price',
       // LV price

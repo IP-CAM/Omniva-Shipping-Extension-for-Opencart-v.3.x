@@ -122,3 +122,8 @@ $_['button_fix_xml'] = 'Update modification';
 $_['xml_updated']   = 'system/omnivalt_base.ocmod.xml updated. Please refresh modifications now.';
 
 $_['old_events_removed_msg'] = 'Old events succesfully removed';
+
+// Settings added in v1.1.2
+$_['entry_label_print_type'] = 'Drukāt etiķeti';
+$_['option_label_print_type_1'] = 'A4 (4 etiķetes)';
+$_['option_label_print_type_2'] = 'Viena etiķete (100 mm x 150 mm)';
