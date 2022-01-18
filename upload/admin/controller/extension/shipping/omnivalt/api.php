@@ -124,7 +124,7 @@ class ControllerExtensionShippingOmnivaltApi extends Controller
       $assignCount = 'packetUnitIdentificator="' . $order['id'] . '"';
     }
     for ($i = 0; $i < $packs; $i++) :
-      $postCode = preg_match('/\d+/', $order['shipping_postcode'], $matches); //426r    <address postcode="'.$order['shipping_postcode'].'"
+      $postCode = preg_match('/(LV-)?\d+/', $order['shipping_postcode'], $matches); //426r    <address postcode="'.$order['shipping_postcode'].'"
       $postCode = $postCode ? $matches[0] : '';
       $xmlRequest .= '
 		                       <item service="' . $service . '" ' . $assignCount . '>
