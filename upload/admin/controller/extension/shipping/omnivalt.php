@@ -10,7 +10,7 @@ class ControllerExtensionShippingOmnivalt extends Controller
 {
   private $error = array();
   private $defaulCodename = 'Omnivalt Mod Default'; // used in older versions with opencart events
-  private $version = '1.1.2';
+  private $version = '1.1.3';
 
   public function install()
   {
