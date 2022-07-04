@@ -1,3 +1,7 @@
+## This module version is deprecated. Since version 2.0.0 it has been moved to https://github.com/mijora/omniva-opencart and is used for both Opencart 2.3 and 3.0
+
+
+
 [![Download](https://img.shields.io/badge/dynamic/json.svg?label=download&url=https://api.github.com/repos/mijora/omniva-opencart-3.0-ocmod/releases/latest&query=$.assets[:1].name&style=for-the-badge)](https://github.com/mijora/omniva-opencart-3.0-ocmod/releases/latest)
 
 ## Omnivalt Shipping Module
